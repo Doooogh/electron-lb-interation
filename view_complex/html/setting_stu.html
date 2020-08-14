@@ -1,0 +1,97 @@
+
+    <!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+  <title></title>
+
+ <!-- Bootstrap -->
+ <link href="../../res/css/bootstrap.min.css" rel="stylesheet">
+ <!-- <link href="../css/page.css" rel="stylesheet"> -->
+ <style type="text/css">
+   
+  .header{
+      background: #535e6a;
+      color: #fff;
+      cursor: move;
+      height: 25px;
+      line-height: 25px;
+      padding-left: 8px;
+      padding-bottom: 2px;
+    }
+  .header span{
+    display: inline-block;
+    height: 25px;
+    line-height: 25px;
+  }
+  .header .title{
+    font-size: 14px;
+  }
+  .btn2:hover{
+    cursor: pointer;
+  }
+  .btn2 {
+     float: right;
+    margin-right: 8px;
+  }
+  .file_path{
+      width: 539px;
+      height: 37px;
+      border: 0px;
+      background-color: rgba(204, 204, 204, 0.39);
+      padding-left: 19px;
+  }
+  .file_choose{
+      margin-bottom: 4px;
+      background-color: #535e6a;
+      color: #fff;
+      font-size: 15px;
+  }
+  .top_div{
+     height: 186px; 
+     border: 1px solid rgba(51, 51, 51, 0.36);
+    /* margin: 15px;*/
+     box-shadow: -3px 2px 8px 0px #999; 
+     background-color: #fff;
+  }
+  .top_div li{
+    margin-top: 18px;list-style: none;
+  }
+ </style>
+</head>
+<body style="background-color: transparent;"><!-- rgba(238, 238, 238, 0.18) -->
+  <div class="container-fluid">
+ <div class="row top_div">
+     <div class="header">
+          <span class="title" title="">设置</span>
+          <span title="关闭" class="btn2 close-btn"><img src="../img/close.png" alt="关闭"/></span>
+      </div>
+      <ul>
+       <li style="float: left;width: 45%;">
+          <label>开机自启</label> <br>
+            <input id="autoOpen" type="checkbox"> 开机自启动
+      </li>
+       <li style="float: left;width: 45%;">
+          <label>视频延迟(ms)</label> <br>
+            <input id="rtmpDelay" type="text" />
+      </li>
+<!--       <li style="float: left;width: 45%;">
+          <label>模式切换</label> 
+            <label> <input name="plan" value="a" type="radio"/> 白板 </label>
+            <label> <input name="plan" value="b" type="radio"/> 黑板 </label>
+      </li>    -->   
+     </ul>
+     <div style="margin-top: 100px;text-align: center;"><button onclick="mysubmit()" class="btn">保存</button></div>
+</div>
+
+</div>
+
+    <script src="../../res/js/jquery.init.js"></script>
+    <script src="../../res/js/jquery.min.js"></script>
+    <script src="../../res/js/bootstrap.min.js"></script>
+    <script src="../js/setting_stu.js"></script>
+  </body>
+</html>

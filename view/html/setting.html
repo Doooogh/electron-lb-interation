@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+  <title></title>
+  <script type="text/javascript">  
+   window.nodeRequire = require;
+   delete window.require;
+   delete window.exports;
+   delete window.module;
+ </script>
+
+ <!-- Bootstrap -->
+ <link href="../../res/css/bootstrap.min.css" rel="stylesheet">
+ <!-- <link href="../css/page.css" rel="stylesheet"> -->
+
+</head>
+<body >
+  <div class="container-fluid" style="padding-top: 20px;">
+    <div class="row">
+      <div class="col-xs-2">
+          <ul id="myTab" class="nav nav-pills nav-stacked">
+            <li class="active">
+              <a href="#home" data-toggle="tab">
+               音视频设置
+             </a>
+           </li>
+          <li >
+            <a href="#fileList" data-toggle="tab">
+             未上传课程
+           </a>
+         </li>
+        </ul>
+    </div>
+  <div class="col-xs-10">
+    <div id="myTabContent" class="tab-content" >
+      <div class="tab-pane fade in active" id="home">
+        <ul>
+        <li style="margin-top: 5px;">
+              <label>
+                回声抑制设置
+              </label>
+              <br/>
+            <input id="millisecond" type="range" min="0" max="1000" value="500" onchange="changeAce(this)" style="display: inline-block;width: calc(100% - 120px);">
+        </li>
+        <li style="margin-top: 5px;">
+              <label>
+                文件管理：默认把录制的文件保存到此文件夹中
+              </label>
+              <br/>
+            <input type="text" id="filePath" name="" value="" readonly />
+            <label class="btn btn_primary" for="changeFilePath" style="margin-bottom: 4px;">更改目录</label>
+            <input type="file" id="changeFilePath" style="position:absolute; clip:rect(0,0,0,0);" webkitdirectory directory/>
+        </li>
+       </ul>
+      </div>
+      <div class="tab-pane fade" id="fileList">
+        <ul id="fileList">
+          
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+<script type="text/javascript">
+ const remote = nodeRequire('electron').remote;
+ var ipcRenderer = nodeRequire('electron').ipcRenderer;
+ const config = remote.require("./conf.js");
+</script>
+<script src="../../res/js/jquery.min.js"></script>
+<script src="../../res/js/client.js"></script>
+<script src="../../res/js/bootstrap.min.js"></script>
+<script>
+let streamindex;
+  $(document).ready(function() {
+
+
+      $('#changeFilePath').change(function(){
+          var filePath = this.files[0].path;
+          document.getElementById("filePath").value=filePath;
+           ipcRenderer.send('changeFilePath',filePath);
+      })
+
+      ipcRenderer.send('getSetting');
+      ipcRenderer.on('getSetting',function(event,result){
+        console.log(result);
+        // ------- 音频-----
+        var audioStr = result.audioStr;
+      
+        var a_results = audioStr.split("|");
+        var audioHtml = "";
+        audioHtml += '<option value="">windows默认设备</option>';
+        if(a_results.length > 1){
+          for(var i = 1;i<a_results.length-1;i=i+2){
+            audioHtml += '<option value="'+a_results[i]+'">'+a_results[i+1]+'</option>';
+          }
+          $('#microphone').html(audioHtml);
+        }
+        if(result.audioKey){
+          $("#microphone").val(result.audioKey);
+        }
+        
+        // ----------视频--------
+        var videoStr = result.videoStr;
+        var v_results = videoStr.split("|");
+        var videoHtml = "";
+         videoHtml += '<option value="">windows默认设备</option>';
+        if(v_results.length > 1){
+          for(var i = 1;i<v_results.length-1;i=i+2){
+            videoHtml += '<option value="'+v_results[i]+'">'+v_results[i+1]+'</option>';
+          }
+          $('#camera').html(videoHtml);
+        }
+        if(result.videoKey){
+          $("#camera").val(result.videoKey);
+        }
+
+        if(result.fileList){
+          $('#fileList').html('');
+          fileList = result.fileList;
+          for(var i=0;i<fileList.length;i++){
+             var file_html = '';
+              var path = fileList[i].path;
+              var fileName=path.substr(path.lastIndexOf("\\")+1);
+              var fileNo = fileName.substr(0,fileName.lastIndexOf("."));
+              var path = path.replace( /\\/g , '\\\\' );
+              var status = fileList[i].status;
+              var lessonName = fileList[i].lessonName;
+              file_html += '<li>';
+              file_html += '<span>'+fileName+'</span>';
+              file_html += '<span>'+lessonName+'</span>';
+              file_html += '<button id="'+fileNo+'" type="button" class="btn btn-primary" style="margin-left: 35px;" onclick="fileUploadAll(this,\''+path+'\')"';
+              if(status == 'add'){
+                file_html += '>上传';
+              }else if(status == 'finish'){
+                file_html += ' disabled="disabled">完成';
+              }
+              
+              file_html +='</button><button type="button" class="btn btn-primary" style="margin-left: 35px;" onclick="fileRemove(this,\''+fileNo+'\')">删除</button>';
+              $('#fileList').append(file_html);
+          }
+        }
+      });
+
+      ipcRenderer.send('getFilePath');
+      ipcRenderer.on('getFilePath',function(event,result){
+         document.getElementById("filePath").value=result;
+      });
+
+      ipcRenderer.on('video',function(event,result){
+        if(result.code == 0){
+          if(result.type == "getStreamVol"){
+            console.log(result.audioNum);
+            $('#audioValue').css("width",result.audioNum+"%")
+          }else if(result.type == 'openAudio'){
+            streamindex = result.streamindex;
+          }
+        }else{
+          //alert(result.msg)
+          remote.dialog.showMessageBox({
+            type:'info',
+            title: '提示',
+            message: result.msg,
+            buttons:['ok']
+          });  
+        }
+        
+      });
+
+      ipcRenderer.on('writeConf',function(event,result){
+        console.log("writeConf:"+result)
+        if(result.status == 'ok'){
+          ipcRenderer.send('getSetting');
+        }
+      });
+
+      ipcRenderer.on('uploadFile',function(event,_result){
+        if(_result.status == 'uploadding'){
+          $('#'+_result.fileNo).html(_result.percent+"%");
+          console.log(_result.percent+"%");
+          uploadding = true;
+        }else if(_result.status == 'uploaded'){
+          $('#'+_result.fileNo).html("完成");
+          console.log("完成");
+          uploadding = false;
+          ipcRenderer.send('fileListFinish',_result.fileNo);
+        }
+        console.log(_result);
+      });
+
+
+      ipcRenderer.send('getFlagAndMil');
+      ipcRenderer.on('onGetFlagAndMil',function(event,flag,millisecond){
+        console.log("--------------------flag="+flag+"-------millisecond="+millisecond);
+        if(flag==0){
+          $('#aceSetting').removeAttr('checked') 
+        }else{
+          $('#aceSetting').attr('checked','checked')
+        }
+        $('#millisecond').val(millisecond);
+      });
+
+      ipcRenderer.on('onSetFlagAndMil',function(event,msg){
+        console.log("--------------------msg="+msg);
+      });
+
+  })
+
+  function changeAce(_this){
+    var millisecond = $(_this).val();
+    var s_index ;
+    for (var i = 0; i < videoList.length; i++) {
+      var videoStr = videoList[i];
+      if(videoStr.indexOf(my_mid+"_") == 0){
+        var str = videoStr.split("_");
+        s_index = str[1];
+        break;
+      }
+    }
+    console.log("------------------:"+millisecond);
+    ipcRenderer.send('setAce',s_index,1,millisecond);
+  }
+
+  function testAudio(){
+    if($('#testAudio').attr('checked') == "checked")
+    {
+      $('#testAudio').removeAttr('checked') 
+      ipcRenderer.send('closeAudio',streamindex)
+    }else{
+      $('#testAudio').attr('checked','checked')
+      ipcRenderer.send('openAudio');
+    }
+  }
+
+  function setCurrentAideo(_this){
+    var _aideoStr = $(_this).val();
+    ipcRenderer.send('setCurrentAideo',_aideoStr);
+  }
+
+  function setCurrentVideo(_this){
+    var _videoStr = $(_this).val();
+    ipcRenderer.send('setCurrentVideo',_videoStr);
+  }
+  function fileUploadAll(_this,filePath){
+    var fileNo = $(_this).attr('id');
+
+    ipcRenderer.send('uploadFile',filePath,'',fileNo);
+  }
+
+  function fileRemove(_this,fileNo){
+    ipcRenderer.send('fileListRemove',fileNo);
+  }
+</script>
+</body>
+</html>

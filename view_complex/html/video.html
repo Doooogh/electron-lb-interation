@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1">
+    <script type="text/javascript">
+      function onClick()
+      {
+        var reg = new RegExp("(^|&)"+ "windowId" +"=(\\S*)");
+        var r = window.location.search.substr(1).match(reg);
+        if(r && r.length >= 3) {
+           var id = r[2];
+           // window.Electron.ipcRenderer.send("videoWindowDblClick", id);
+           //给当前父窗口直接发送消息
+            var webContentsId = window.Electron.remote.getCurrentWindow().getParentWindow().webContents.id;
+            window.Electron.ipcRenderer.sendTo(webContentsId,"videoWindowDblClick",id);
+        }
+      }
+
+      function changeDivWH() {
+        var w = document.documentElement.clientWidth;
+        var h = document.documentElement.clientHeight;
+
+        document.getElementById("_cfx").style.height = h + "px";
+        document.getElementById("_cfx").style.width = w + "px";
+      }
+        document.onkeydown=function(event){//ESC取消全屏
+             var e = event || window.event || arguments.callee.caller.arguments[0];
+            if(e && e.keyCode==27){ // 按 Esc 
+              alert();
+            }
+      }; 
+
+    </script>
+  </head>
+  <body style="background: #000000;overflow: hidden;">
+    <div id="_cfx" ondblclick="onClick()">
+    </div>
+    <!-- <h1><font id="errorContent"></font>????????????????????</h1> -->
+    <script type="text/javascript">
+      window.onload=function(){  
+        changeDivWH();  
+      }  
+
+      window.onresize=function(){
+        changeDivWH();
+      }
+    </script> 
+  </body>
+</html>

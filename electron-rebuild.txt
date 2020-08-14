@@ -1,0 +1,6 @@
+
+
+npm install --global --production windows-build-tools
+
+
+.\node_modules\.bin\electron-rebuild -d=https://gh-contractor-zcbenz.cnpmjs.org/atom-shell/dist/

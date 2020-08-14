@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+    <title>学生界面（讲课）</title>
+
+    <!-- Bootstrap -->
+    <link href="../../res/css/bootstrap.min.css" rel="stylesheet">
+	<link href="../css/hd.css" rel="stylesheet">
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="//cdn.bootcss.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="//cdn.bootcss.com/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <style type="text/css">
+		.myicon{width:60px;height:45px;display:inline-block;margin-right:10px;}
+		
+    </style>
+</head>
+<body style="user-select: none;" onselectstart="return false;" unselectable="on">
+    <div class="hd hd_student" >
+		<section class="hdT" style="/*-webkit-app-region: drag*/" ondblclick="dbClick()">
+			<h1 class="lesson_name">课程名称：教师授课技巧培训</h1>
+			<a class="icon_close" href="#" style="-webkit-app-region: no-drag;"></a>
+			<a class="icon_zoom" href="#" style="-webkit-app-region: no-drag;"></a>
+			<a class="icon_narrow" href="#" style="-webkit-app-region: no-drag;"></a>
+		</section>
+		<section class="hdM" ondblclick="dbClick()">
+			<div id="main1" class="zscreen" style="z-index:1;width:76%;height:100%" >
+				<p class="tishi" style="display: none">主讲教师尚未登录,请稍后!</p>
+				<!-- <img src="../img/img01.jpg" /> -->
+			</div>
+
+			<div id="main2" class="div1" style="display: none;">
+				<div class="zjr" style="width: 100%;height: 35%;position: relative;top: 10%;background-color: #000000">
+				</div>
+				<div class="fyr" style="width: 100%;height: 35%;position: relative;top: 15%;background-color: #000000">
+				</div>
+			</div>
+
+			<div id="canvasDiv" style="position: absolute;left:0;top:50%;width:100%;height:100%;background: #ffffff; display: none;transform: translateY(-50%)">
+				<div class='avr_canvas_div_class' style="/*background: #ffffff;*/width:100%; height:100%;background-size: 100% 100%; ">
+					<canvas class='avr_canvas_class'   id="drawing" style="/*background: #ffffff;*/ width:100%; height:100%;"></canvas>
+				</div>
+				<div class="func" id="tools">
+					<div class="func_v func_v_yc" style="float: right;">
+					</div>
+					<!-- <div class="func_v func_v_qp" style="float: right;">
+					</div> -->
+					<div class="func_v func_v_xp" style="float: right;">
+					</div>
+					<div class="func_v func_v_hb" style="float: right;">
+					</div>
+
+				</div>
+				<div class="func_v_hb_box" style="display: none;" >
+					<ul class="color clearfix">
+						<li onclick="changeColor('#0024ff','any')"></li>
+						<li onclick="changeColor('#ffd200','any')"></li>
+						<li onclick="changeColor('#ff7067','any')"></li>
+						<li onclick="changeColor('#ace24c','any')"></li>
+						<li onclick="changeColor('#fb0202','any')"></li>
+						<li onclick="changeColor('#0b1116','any')"></li>
+						<li onclick="$('#color').click()"></li>
+						<li style="width: 0px;height: 0px"> <input id="color" type="color" style="width: 0px;height: 0px;border: 0px;padding: 0px;position: relative;top: 100000px;" onchange="changeColor(this.value,'any')"></li><!--fillStyle= this.value;strokeStyle = this.value;-->
+					   
+					</ul>
+					<ul class="thickness clearfix">
+						<li>粗细：</li>
+						<li class="thicknessBtn on"  onclick="lineWidth=2"></li>
+						<li class="thicknessBtn"  onclick="lineWidth=6"></li>
+						<li class="thicknessBtn"  onclick="lineWidth=8"></li>
+						<li class="thicknessBtn"  onclick="lineWidth=12"></li>
+						<label style="position: relative;top: -4px;">颜色</label>
+						<div id="hb_color" style="margin-right: 10px;float: right;width: 15px;height: 15px;background-color:#000000;"></div>
+					</ul>
+				</div>
+				<div class="func_v_xp_box" style="display: none;">
+					<ul class="eraser clearfix">
+						<li class="on"></li>
+						<li></li>
+						<li></li>
+					</ul>
+				</div>
+			</div>
+		</section>
+		<section class="hdB" ondblclick="dbClick()">
+			<webview id="foo" src="time.html" style="width: 80%;float: left;" preload="../../res/js/preload.js"></webview>
+			<!-- <a onclick="window.Electron.openSetting('setting_stu',400,186,'系统设置')" style="float: right;margin-top: 5px;margin-right: 10px;color: white;">设置</a> -->
+			<a class="myicon icon_setup fr" title="设置" onclick="window.Electron.openSetting('setting_stu',600,186,'系统设置')" href="#"></a>
+		</section>
+	</div>
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="../../res/js/jquery.init.js"></script>
+    <script src="../../res/js/jquery.min.js"></script>
+    <script src="../../res/js/client.js"></script>
+	<script src="../../res/js/interact.js"></script>
+	<script src="../../res/js/trace.js"></script>
+	<script src="../../res/js/md5.js"></script>
+	<script src="../../res/js/server.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="../../res/js/bootstrap.min.js"></script>
+    <script src="../js/student.js"></script>
+     <script src="../../res/js/canvas.js"></script>
+	<script src="../js/tools.js"></script>
+	<script type="text/javascript">
+		$('a').unbind('mouseenter').unbind('mouseleave');
+	</script>
+  </body>
+</html>

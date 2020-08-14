@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="../../res/css/bootstrap.min.css" rel="stylesheet">
+	<link href="../css/index.css" rel="stylesheet">
+	<link href="../css/hd.css" rel="stylesheet">
+</head>
+<style type="text/css">
+	body{
+		background-size: 100% 100%;
+	}
+</style>
+<body>
+<div >
+ 	<div id="close_tc" style="background:#FA7D40;width: 160px;height: 45px;position: absolute;z-index: 999;font-size: 18px;border-radius: 0 0 18px 18px;display: none" >
+		&nbsp;&nbsp;&nbsp;推题中:&nbsp;<img id="tt_img" class="tt_img" style="margin: 8px;cursor:pointer;background-size: 100% 100%;width: 60px;height: 25px;border-radius: 5px;background-image:url('../img/close_tc.png')" src="../img/close_tc.png" />
+	</div>
+	<div id="tools_child_hb" class="func_v_childbox func_v_hb_box" style="display: none;">
+			<ul class="color clearfix">
+				<li onclick="changeColor('#0024ff','any')"></li>
+				<li onclick="changeColor('#ffd200','any')"></li>
+				<li onclick="changeColor('#ff7067','any')"></li>
+				<li onclick="changeColor('#ace24c','any')"></li>
+				<li onclick="changeColor('#fb0202','any')"></li>
+				<li onclick="changeColor('#0b1116','any')"></li>
+				<li onclick="$('#color').click()"></li>
+				<li style="width: 0px;height: 0px"> <input id="color" type="color" style="width: 0px;height: 0px;border: 0px;padding: 0px;position: relative;top: 100000px;" onchange="changeColor(this.value,'any')"></li>
+			   
+			</ul>
+			<ul class="thickness clearfix">
+				<li>粗细：</li>
+				<li class="thicknessBtn on"  onclick="lineWidth=2;lineMode = 'any';"></li>
+				<li class="thicknessBtn"  onclick="lineWidth=6;lineMode = 'any';"></li>
+				<li class="thicknessBtn"  onclick="lineWidth=8;lineMode = 'any';"></li>
+				<li class="thicknessBtn"  onclick="lineWidth=12;lineMode = 'any';"></li>
+				<label style="position: relative;top: -4px;">颜色</label>
+				<div id="hb_color" style="margin-right: 10px;float: right;width: 15px;height: 15px;background-color:#000000;"></div>
+			</ul>
+	</div>
+
+	<div id="tools_child_xp" class="func_v_childbox func_v_xp_box" style="display: none;">
+		<ul class="eraser clearfix">
+			<li class="on"></li>
+			<li></li>
+			<li></li>
+		</ul>
+	</div>
+	<div class="func_new_div">
+		
+	</div>
+	<div class="my_users">
+		<ul class="func_zd_new_l" id="users">
+			<!-- <li class="on"><a href="#">六里小学</a></li>
+			<li><a href="#">江龙小学</a></li>
+			<li><a href="#">六里小学</a></li>
+			<li><a href="#">江龙小学</a></li>
+			<li><a href="#">六里小学</a></li>
+			<li><a href="#">江龙小学</a></li>
+			<li><a href="#">六里小学</a></li>
+			<li><a href="#">江龙小学</a></li>
+			<li><a href="#">六里小学</a></li>
+			<li><a href="#">江龙小学</a></li>
+			<li><a href="#">六里小学</a></li>
+			<li><a href="#">江龙小学</a></li>  -->
+		</ul>
+	</div>
+</div>
+<div class='avr_canvas_div_class' style="width:100%; height:100%;display: none;">
+	<canvas class='avr_canvas_class' id="drawing" style="width:100%; height:100%;position: absolute;" ></canvas>
+</div>
+    <script src="../../res/js/jquery.init.js"></script>
+    <script src="../../res/js/jquery.min.js"></script>
+    <script src="../../res/js/client.js"></script>
+    <script src="../../res/js/canvas.js"></script>
+	<script src="../../res/js/interact.js"></script>
+	<script src="../../res/js/trace.js"></script>
+	<script src="../../res/js/md5.js"></script>
+	<script src="../../res/js/server.js"></script>
+    <script src="../../res/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="../../res/js/jquery.nicescroll.js"></script>
+	<script src="../js/index_tools_child.js"></script>
+	<script src="../js/tools.js"></script>
+	<script type="text/javascript">
+		$(function(){
+			$("#close_tc").css("margin-left",(window.screen.width - 160)/2 );
+			$("#tt_img").mouseover(function(){
+        		
+        		 document.getElementById('tt_img').src = "../img/close_tc_db.png";
+        	});
+
+          	$("#tt_img").mouseout(function(){
+        		document.getElementById('tt_img').src = "../img/close_tc.png";
+        	});
+		});
+
+	</script>
+  </body>
+</html>

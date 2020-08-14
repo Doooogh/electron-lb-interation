@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>选择</title>
+    <!-- Bootstrap -->
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+	<style type="text/css">
+		body, html { height: 100%; font-size: 14px; background-color:transparent;padding-top: 200px;}
+		.choosepage {width: 400px;height: 100px;background: url(../img/img01.jpg) no-repeat; background-size: 100% 100%; }
+		button{width: 30%;}
+	</style>
+</head>
+<body>
+    <div class="container-fluid choosepage">
+		<div class="btnbox">
+			<center style="margin: 27px;">
+				<button type="button" class="btn btn-lg btn-success main" style="display: none;" onclick="complex()">主屏</button>
+				<button type="button" class="btn btn-lg btn-success manager" style="display: none;" onclick="complexManager()">课管端</button>
+				<button type="button" class="btn btn-lg btn-warning assist" style="margin-left: 26px;" onclick="complexAssist()">辅助屏</button>
+
+			</center>
+		</div>
+	</div>
+	<script type="text/javascript">  
+	 	window.nodeRequire = require;
+		delete window.require;
+		delete window.exports;
+		delete window.module;
+		var ipcRenderer = nodeRequire('electron').ipcRenderer;
+		var remote = nodeRequire('electron').remote;
+	</script>
+    <script src="../js/jquery.min.js"></script>
+    <script src="../js/bootstrap.min.js"></script>
+    <script src="../js/jquery.SuperSlide.2.1.js"></script>
+	<script>
+		var conf;
+		var _path ;
+		function complex(){
+			$(".choosepage").hide();
+			window.Electron.writeConf(['status'],["zp"]);
+			ipcRenderer.send("complex_index");
+		}
+		
+		function complexAssist(){
+			var viewPath = _path+'/html/assist.html';
+			$(".choosepage").hide();
+			window.location.href = '../../'+viewPath+window.location.search;
+			window.Electron.writeConf(['status'],["fp"]);
+		   	remote.getCurrentWindow().center();
+		}
+
+		function complexManager(){
+			var viewPath = _path+'/html/assist_manager.html';
+			$(".choosepage").hide();
+			window.location.href = '../../'+viewPath+window.location.search;
+		   	remote.getCurrentWindow().center();
+		}
+
+		$(function(){
+			ipcRenderer.on('stopLive',function(event){
+				ipcRenderer.send("stopLive");
+			});
+
+			conf = window.Electron.readConf();
+			//默认通用方案
+			_path = "view_complex";
+			$('.main').show();
+/*			switch(conf.plan){
+				case "b":
+					//黑板方案
+					$('.manager').show();
+					_path = "view_black";
+					if(remote.getGlobal('lessonModel').role=="manager"){
+						complexManager();
+					}else if(remote.getGlobal('lessonModel').role=="teacher"){
+						complexAssist();
+					}
+					
+					break;
+				default :
+
+					break;
+			}*/
+			/*if(conf.plan=="a"){}*/
+				if(remote.getGlobal('lessonModel').role=="manager"){//课管端
+					complexManager();
+				}else if(remote.getGlobal('lessonModel').role=="teacher"){
+					if(conf.status=="zp"&&conf.plan=="a"){//主讲画面
+						complex();	
+					}else if(conf.status=="fp"){//辅助屏画面
+						complexAssist();
+					}else if(conf.status=="zp"&&conf.plan=="b"){
+						complexAssist();
+					}
+				}
+
+			
+		})
+	</script>
+  </body>
+</html>

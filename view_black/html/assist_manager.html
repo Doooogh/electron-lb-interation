@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+    <title>课管端</title>
+
+    <!-- Bootstrap -->
+    <link href="../../res/css/bootstrap.min.css" rel="stylesheet">
+	<link href="../css/hd.css" rel="stylesheet">
+
+</head>
+<body>
+    <div class="hd">
+		<section class="hdT" style="/*-webkit-app-region: drag*/"  ondblclick="dbClick()">
+			<h1 class="lesson_name">课程名称：教师授课技巧培训</h1>
+			<a class="icon_close" href="#" style="-webkit-app-region: no-drag;"></a>
+			<a class="icon_zoom" href="#" style="-webkit-app-region: no-drag;"></a>
+			<a class="icon_narrow" href="#" style="-webkit-app-region: no-drag;"></a>
+		</section>
+		<section class="hdM" id="classroom_section"  ondblclick="dbClick()">
+			<ul class="hdUl hdUL_3" id="allRoom">
+				<li id="1" class="zhujiangren"><h4>主讲教室画面</h4>
+					<div class="main" style="z-index: -1">
+						<img src="../img/img02.jpg" />
+					</div>
+					<div id="canvasDiv" style="position: relative;left:0;top:0;width:100%;height:calc(100% - 30px);/*background: #ffffff;*/ display: none;background-size: 100% 100%;">
+						<div style="/*background: #ffffff;*/ width:100%; height:100%">
+							<canvas id="drawing" class='avr_canvas_class' style="/*background: #ffffff;*/ width:100%; height:100%" ></canvas>
+						</div>
+					</div>
+				</li>
+				<li><h4></h4>
+				<div class="main">
+					<img src="../img/img04.jpg" />
+				</div></li>
+				<li><h4></h4>
+				<div class="main">
+					<img src="../img/img04.jpg" />	
+				</div></li>
+				<li><h4></h4>
+				<div class="main">
+					<img src="../img/img04.jpg" />
+				</div>
+				</li>
+				
+			</ul>
+		</section>
+		<section class="hdB">
+			<webview id="foo" src="time.html" style="position: fixed;"  ></webview><!-- ondblclick="dbClick()" -->
+
+			<div>
+			
+			<a class="icon icon_setup fr" title="设置" href="#"></a>
+			<a class="icon icon_lz_manager fr" title="开始录制" href="#"></a>
+			<!-- <a class="icon icon_VGA0 fr" title="VGA" href="#"></a>
+			<a class="icon icon_VGAS fr" title="VGA最小" href="#"></a>
+			<a class="icon icon_VGAB fr" title="VGA最大" href="#"></a>
+			<a class="icon icon_VGAN fr" title="无VGA" href="#"></a> -->
+			<a class="icon icon_VGAT fr" title="推题" href="#"></a>
+			<a class="icon icon_VIEW fr" id="changeVideo" title="切换" href="#"></a>
+			<!-- <a class="icon icon_VGAT_black fr" title="语音" href="#"></a> -->
+			<input type="file" id="blackFilePath" style="position:absolute; clip:rect(0,0,0,0);" >
+			<a class="icon fr icon_unhook" style="color: whitesmoke;font-size: 15px; padding-top: 10px;display: none" title="结束发言" href="#">结束发言</a>
+ 			</div>
+			
+		</section>
+	</div>
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="../../res/js/jquery.init.js"></script>
+    <script src="../../res/js/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="../../res/js/client.js"></script>
+    <script src="../../res/js/canvas.js"></script>
+	<script src="../../res/js/interact.js"></script>
+	<script src="../../res/js/trace.js"></script>
+	<script src="../../res/js/server.js"></script>
+    <script src="../../res/js/bootstrap.min.js"></script>
+    <script src="../js/assist_manager.js"></script>
+	<script src="../js/tools.js"></script>
+	
+	<script src="../js/index_bottom.js"></script>
+  </body>
+</html>

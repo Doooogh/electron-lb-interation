@@ -1,0 +1,23 @@
+body { background-color: transparent; overflow: hidden; }
+body, html { height: 100%; font-size: 14px; color: #4b4b4b; }
+
+/** login **/
+.login {
+    padding: 0px 0px 0 50px;
+}
+.login .input1 { /*width: 62%; height: 25px; border-radius: 2px;*/	float:left;position:relative;border:1px solid #d6d6d6;width:250px;height:27px;line-height:32px;border-radius:4px;background-color:#fff;font-size:14px;
+ }
+.login .text1 { line-height: 25px; }
+.mt10 {padding: 0 0 5px 0  }
+/** index **/
+.index {    width: 255px;
+    height: 451px;}
+.part1_l {/* width:calc(100% - 265px);*/ float: left; position: relative; height: 100%;}
+.part1_r { background-color: #fff; width: 255px; float: right; position: relative; }
+.part2_t { padding: 5px 0; height: 55px; }
+.part2_m { }
+.part2_b { background-color: #fff; height: 40px; padding-top: 15px; line-height: 25px; text-indent: 1em; }
+
+.part1_r_btn { width: 19px; height: 70px; position: absolute; right: -19px; top: 50%; margin-top: -35px; background: url(../img/part1_r_btn.png) no-repeat; z-index: 1; cursor: pointer; }
+.part1_r_btn.on { -webkit-transform:rotate(-180deg);-moz-transform:rotate(-180deg);-o-transform:rotate(-180deg);-ms-transform:rotate(-180deg);transform:rotate(-180deg); right: 0; }
+

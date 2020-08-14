@@ -1,0 +1,29 @@
+{
+  "osx" : {
+    "title": "JKY",
+    "background": "view/img/ppt-gn.png",
+    "icon": "view/img/app.icns",
+    "icon-size": 80,
+    "title": "JKY_by_XCYG_1_0_2",
+    "contents": [
+      { "x": 438, "y": 160, "type": "link", "path": "/Applications" },
+      { "x": 192, "y": 160, "type": "file" }
+    ]
+  },
+  "win" : {
+    "title" : "JKY",
+    "version" : "1.0.1",
+    "publisher": "XCYG",
+    "icon" : "view/img/app.ico",
+    "verbosity": 1
+  },
+  "linux" : {
+    "arch" : 64,
+    "target" : "deb",
+    "version" : "1.0.1",
+    "title" : "HSZX",
+    "comment" : "This is a comment",
+    "executable" : "myExec",
+    "maintainer": "Dummy Maintainer <dummy@maintainer.org>"
+  }
+}

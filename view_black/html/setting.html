@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+  <title></title>
+  <script type="text/javascript">  
+   window.nodeRequire = require;
+   delete window.require;
+   delete window.exports;
+   delete window.module;
+
+ </script>
+
+ <!-- Bootstrap -->
+ <link href="../../res/css/bootstrap.min.css" rel="stylesheet">
+ <!-- <link href="../css/page.css" rel="stylesheet"> -->
+ <style type="text/css">
+   
+  .header{
+      background: #535e6a;
+      color: #fff;
+      cursor: move;
+      height: 25px;
+      line-height: 25px;
+      padding-left: 8px;
+      padding-bottom: 2px;
+    }
+  .header span{
+    display: inline-block;
+    height: 25px;
+    line-height: 25px;
+  }
+  .header .title{
+    font-size: 14px;
+  }
+  .btn2:hover{
+    cursor: pointer;
+  }
+  .btn2 {
+     float: right;
+    margin-right: 8px;
+  }
+  .file_path{
+      width: 539px;
+      height: 37px;
+      border: 0px;
+      background-color: rgba(204, 204, 204, 0.39);
+      padding-left: 19px;
+  }
+  .file_choose{
+      margin-bottom: 4px;
+      background-color: #535e6a;
+      color: #fff;
+      font-size: 15px;
+  }
+  .top_div{
+     height: 273px; 
+     border: 1px solid rgba(51, 51, 51, 0.36);
+    /* margin: 15px;*/
+     box-shadow: -3px 2px 8px 0px #999; 
+     background-color: #fff;
+  }
+  .top_div li{
+    margin-top: 18px;list-style: none;
+  }
+ </style>
+</head>
+<body style="background-color: transparent;"><!-- rgba(238, 238, 238, 0.18) -->
+  <div class="container-fluid">
+ <div class="row top_div">
+     <div class="header">
+          <span class="title" title="">设置</span>
+          <span title="关闭" class="btn2 close-btn"><img src="../img/close.png" alt="关闭"/></span>
+      </div>
+      <ul>
+      <li>
+          <label>默认保存文件夹(<font style="color: red">*课管端不进行视频录制</font>)</label>
+          <br>
+          <input type="text" class="file_path" id="filePath" name="" value="" readonly="">
+          <label class="btn btn_primary file_choose" for="changeFilePath">更改目录</label>
+          <input type="file" id="changeFilePath" style="position:absolute; clip:rect(0,0,0,0);" webkitdirectory="" directory="">
+      </li>
+       <!--  <li style="float: left;width: 35%;">
+          <label>画面比例</label>
+          <br>
+          <input name="pip" value="0" type="radio" checked="true"> 黄金分割<input name="pip" style="margin-left: 10px;" value="1" type="radio"> 2:1<input  name="pip" style="margin-left: 10px;" value="2" type="radio"> 3:1
+      </li>
+       <li style="float: left;width: 35%;">
+          <label>学生最大</label>
+          <br>
+          <input name="stuMax" value="0" type="checkbox"> &nbsp是 &nbsp&nbsp&nbsp最大时间(毫秒):<input name="stuUp" step="500"  value="0" type="number" style="width: 100px;">
+      </li> -->
+<!--        <li style="float: left;width: 55%;">
+        
+          <label>开机自启</label> 
+            <input id="autoOpen" type="checkbox"> 开机自启动
+      </li> -->
+      <li style="float: left;width: 45%;">
+          <label>视频延迟(ms)</label> 
+            <input id="millisecond" type="number" step="50"  value="200"/>
+      </li>  
+
+      <li style="float: left;width: 45%;">
+          <label>模式切换</label> 
+            <label> <input name="plan" value="a" type="radio"/> 白板 </label>
+            <label> <input name="plan" value="b" type="radio"/> 黑板 </label>
+      </li>
+      <li style="float: right;width: 55%;">
+          <label>学生音量:</label> 
+            <input id="vol" type="number" max="100" min="0"  step="1" onkeydown="return false;"  value=""/>
+      </li>  
+      <li style="float: left;width: 30%;">
+          <label>显示答题学生最大化:</label> 
+            <label> <input id="stuMaxVideo" type="checkbox"/> 显示 </label>
+      </li>    
+     </ul>
+     <div style="margin-top: 100px;text-align: center;"><button onclick="mysubmit()" class="btn">保存</button></div>
+ 
+</div>
+
+</div>
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+<script type="text/javascript">
+ const remote = nodeRequire('electron').remote;
+ var ipcRenderer = nodeRequire('electron').ipcRenderer;
+ const config = remote.require("./conf.js");
+  var currentWindow = remote.getCurrentWindow();
+
+</script>
+<script src="../../res/js/jquery.min.js"></script>
+<script src="../../res/js/client.js"></script>
+<script src="../../res/js/bootstrap.min.js"></script>
+<script>
+let streamindex;
+  $(document).ready(function() {
+
+
+      var pipData = window.Electron.readConf();
+      if(pipData.stuUp !=0)
+      {
+        $("input[name='stuMax']").prop("checked", "checked");
+        $("input[name='stuUp']").val(pipData.stuUp);
+      }
+      else
+      {
+        $("input[name='stuMax']").prop("checked", false);
+        $("input[name='stuUp']").val(0);
+      }
+
+      switch(pipData.pip){
+        case 1:
+          $('input:radio[name="pip"][value="1"]').attr('checked', "checked");
+          break;
+        case 2:
+          $('input:radio[name="pip"][value="2"]').attr('checked', "checked");
+        default:
+          $('input:radio[name="pip"][value="0"]').attr('checked', "checked");
+      }
+     if(pipData.vol||pipData.vol==0){
+      $("#vol").val(pipData.vol);
+     }else{
+      $("#vol").val(30);
+     }
+      $(".close-btn").click(function(){
+         currentWindow.close();
+      });
+
+      $('#changeFilePath').change(function(){
+          var filePath = this.files[0].path;
+          document.getElementById("filePath").value=filePath;
+          ipcRenderer.send('changeFilePath',filePath);
+      })
+
+      ipcRenderer.send('getSetting');
+      ipcRenderer.on('getSetting',function(event,result){
+        console.log(result);
+        // ------- 音频-----
+        var audioStr = result.audioStr;
+      
+        var a_results = audioStr.split("|");
+        var audioHtml = "";
+        audioHtml += '<option value="">windows默认设备</option>';
+        if(a_results.length > 1){
+          for(var i = 1;i<a_results.length-1;i=i+2){
+            audioHtml += '<option value="'+a_results[i]+'">'+a_results[i+1]+'</option>';
+          }
+          $('#microphone').html(audioHtml);
+        }
+        if(result.audioKey){
+          $("#microphone").val(result.audioKey);
+        }
+        
+        // ----------视频--------
+        var videoStr = result.videoStr;
+        var v_results = videoStr.split("|");
+        var videoHtml = "";
+         videoHtml += '<option value="">windows默认设备</option>';
+        if(v_results.length > 1){
+          for(var i = 1;i<v_results.length-1;i=i+2){
+            videoHtml += '<option value="'+v_results[i]+'">'+v_results[i+1]+'</option>';
+          }
+          $('#camera').html(videoHtml);
+        }
+        if(result.videoKey){
+          $("#camera").val(result.videoKey);
+        }
+      });
+
+      ipcRenderer.send('getFilePath');
+      ipcRenderer.on('getFilePath',function(event,result){
+         document.getElementById("filePath").value=result;
+      });
+
+      ipcRenderer.on('video',function(event,result){
+        if(result.code == 0){
+          if(result.type == "getStreamVol"){
+            console.log(result.audioNum);
+            $('#audioValue').css("width",result.audioNum+"%")
+          }else if(result.type == 'openAudio'){
+            streamindex = result.streamindex;
+          }
+        }else{
+          alert(result.msg)
+        }
+        
+      });
+
+      ipcRenderer.send('getFlagAndMil');
+      ipcRenderer.on('onGetFlagAndMil',function(event,flag,millisecond){
+        console.log("--------------------flag="+flag+"-------millisecond="+millisecond);
+        if(flag==0){
+          $('#aceSetting').removeAttr('checked') 
+        }else{
+          $('#aceSetting').attr('checked','checked')
+        }
+        $('#millisecond').val(millisecond);
+      });
+
+      ipcRenderer.on('onSetFlagAndMil',function(event,msg){
+        console.log("--------------------msg="+msg);
+      });
+
+      var conf = window.Electron.readConf();
+      $("input:radio[value='"+conf.plan+"']").attr('checked','true');
+     // $('#autoOpen').prop("checked",conf.autoOpen);
+      $('#stuMaxVideo').prop("checked",conf.stuMaxVideo);
+  })
+
+  function changeAce(_this){
+    var millisecond = $(_this).val();
+    var s_index ;
+    for (var i = 0; i < videoList.length; i++) {
+      var videoStr = videoList[i];
+      if(videoStr.indexOf(my_mid+"_") == 0){
+        var str = videoStr.split("_");
+        s_index = str[1];
+        break;
+      }
+    }
+    console.log("------------------:"+millisecond);
+    ipcRenderer.send('setAce',s_index,1,millisecond);
+  }
+
+  function testAudio(){
+    if($('#testAudio').attr('checked') == "checked")
+    {
+      $('#testAudio').removeAttr('checked') 
+      ipcRenderer.send('closeAudio',streamindex)
+    }else{
+      $('#testAudio').attr('checked','checked')
+      ipcRenderer.send('openAudio');
+    }
+  }
+
+  function setCurrentAideo(_this){
+    var _aideoStr = $(_this).val();
+    ipcRenderer.send('setCurrentAideo',_aideoStr);
+  }
+
+  function setCurrentVideo(_this){
+    var _videoStr = $(_this).val();
+    ipcRenderer.send('setCurrentVideo',_videoStr);
+  }
+
+  function mysubmit(){
+    //var autoOpen_ischecked = $('#autoOpen').is(':checked');
+    var reg = /^(?:0|[1-9][0-9]?|100)$/;
+    var stuMaxVideo_ischecked = $('#stuMaxVideo').is(':checked');
+    var pipNum =  $('input:radio[name="pip"]:checked').val();
+    var vol = parseInt($("#vol").val());
+    if(!reg.test(vol)){
+        alert("音量值输入正确格式!");
+        return false;
+    };
+    var stuUp = 0;
+    if($("input[name='stuMax']").is(':checked'))
+    {
+      stuUp = $("input[name='stuUp']").val();
+    }
+    var pipData = {"pip":Number(pipNum),"stuUp":Number(stuUp)}
+   // sendToPeer("broadcast", JSON.stringify({"key":"pip","data":pipData,"save":1}));
+
+    var webContentsId = window.Electron.remote.getCurrentWindow().getParentWindow().webContents.id;
+    window.Electron.ipcRenderer.sendTo(webContentsId,"savePip",pipData);
+    window.Electron.ipcRenderer.sendTo(webContentsId,"changeVol",vol);
+    
+    var millisecond  = Number($("#millisecond").val());
+    window.Electron.writeConf(['millisecond'],[millisecond]);
+
+   /* if(autoOpen_ischecked){
+      window.Electron.setAppStart();
+    }else{
+      window.Electron.cancelAppStart();
+    }*/
+    var plan = $("input[name='plan']:checked").val();
+    window.Electron.writeConf(['plan'],[plan]);
+   // window.Electron.writeConf(['autoOpen'],[autoOpen_ischecked]);
+    window.Electron.writeConf(['stuMaxVideo'],[stuMaxVideo_ischecked]);
+    window.Electron.writeConf(['vol'],[vol]);
+    window.Electron.closeCurrWin();
+
+    
+  }
+</script>
+</body>
+</html>

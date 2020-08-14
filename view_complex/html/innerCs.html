@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+    <title>内网参数</title>
+
+    <link href="../../res/css/bootstrap.min.css" rel="stylesheet">
+	<link href="../css/index.css" rel="stylesheet">
+</head>
+<body>
+	<div class="container login">
+		<div class="row mt10">
+			<div class="col-xs-3 text-right text1">互动类型：</div>
+			<div class="col-xs-9">
+				<label><input type="radio"  name="in_uType" value="teacher">教师</label>
+				<label><input type="radio"  name="in_uType" value="student">学生</label>
+			</div>
+		</div>
+		<div class="row mt10">
+			<div class="col-xs-3 text-right text1">教室名称：</div>
+			<div class="col-xs-9"><input type="text" class="form-control input1" id="in_clientName" value=""></div>
+		</div>
+		<div class="row mt10">
+			<div class="col-xs-3 text-right text1">教室ID：</div>
+			<div class="col-xs-9"><input type="text" class="form-control input1" id="in_clientId" value=""></div>
+		</div>
+		<div class="row mt10">
+			<div class="col-xs-3 text-right text1">课程名称：</div>
+			<div class="col-xs-9"><input type="text" class="form-control input1" id="in_courseName" value=""></div>
+		</div>
+		<div class="row mt10">
+			<div class="col-xs-3 text-right text1">课程ID：</div>
+			<div class="col-xs-9"><input type="text" class="form-control input1" id="in_roomId" value=""></div>
+		</div>
+		<div class="row mt10">
+			<div class="col-xs-3 text-right text1">MCU地址：</div>
+			<div class="col-xs-9"><input type="text" class="form-control input1" id="in_mcu" value=""></div>
+		</div>
+		<div class="row mt10">
+			<div class="col-xs-3 text-right text1">设备地址：</div>
+			<div class="col-xs-9"><input type="text" class="form-control input1" id="in_rmanager" value=""></div>
+		</div>
+		<div class="row mt10">
+			<div class="col-xs-3 text-right text1">设备账号：</div>
+			<div class="col-xs-9"><input type="text" class="form-control input1" id="recName" value=""></div>
+		</div>
+		<div class="row mt10">
+			<div class="col-xs-3 text-right text1">设备密码：</div>
+			<div class="col-xs-9"><input type="text" class="form-control input1" id="recPwd" value=""></div>
+		</div>
+		<div class="row mt10">
+			<div class="col-xs-3 text-right text1">设备ID：</div>
+			<div class="col-xs-9"><input type="text" class="form-control input1" id="deviceId" value=""></div>
+		</div>
+		<div class="row mt10">
+			<div class="col-xs-3 text-right text1">nginx地址：</div>
+			<div class="col-xs-9"><input type="text" class="form-control input1" id="in_nginx" value=""></div>
+		</div>
+		<div class="row mt10">
+			<div class="col-xs-3 text-right text1">nginxFilePath：</div>
+			<div class="col-xs-9"><input type="text" class="form-control input1" id="nginxFilePath" value=""></div>
+		</div>
+		<div class="row mt10">
+			<div class="col-xs-3 text-right text1">高低码流:</div>
+			<div class="col-xs-9">
+				<label><input type="radio"  name="bitstream" value="0">低码流</label>
+				<label><input type="radio"  name="bitstream" value="1">高码流</label>
+			</div>
+		</div>
+		<div class="row" style="margin-top: 2px;padding: 0 40px 0 0">
+			<center>
+				<button type="button" class="btn btn-default" onclick="mySubmit()">保存</button>
+			</center>
+		</div>
+	</div>
+
+    <script src="../../res/js/jquery.init.js"></script>
+    <script src="../../res/js/jquery.min.js"></script>
+    <script src="../../res/js/bootstrap.min.js"></script>
+   	<script type="text/javascript">
+   		$(function(){
+   				var conf = window.Electron.readConf();
+   	
+   				$('#in_clientId').val(conf.in_clientId);
+   				$('#in_clientName').val(conf.in_clientName);
+   				$('#in_courseName').val(conf.in_courseName);
+   				$('#in_roomId').val(conf.in_roomId);
+   				$('#in_mcu').val(conf.in_mcu);
+				$('#in_rmanager').val(conf.in_rmanager);
+				$('#deviceId').val(conf.deviceId);
+				$('#recName').val(conf.recName);
+				$('#recPwd').val(conf.recPwd);
+				$('#nginxFilePath').val(conf.nginxFilePath);
+				$('#in_nginx').val(conf.nginx);
+				$("input:radio[value='"+conf.in_uType+"']").attr('checked','true');
+				$("input:radio[value='"+conf.bitstream+"']").attr('checked','true');
+   		});
+   		function mySubmit(){
+   			var param = {
+				in_clientId : $('#in_clientId').val(),
+				in_clientName : $('#in_clientName').val(),
+				in_courseName : $('#in_courseName').val(),
+				in_roomId : $('#in_roomId').val(),
+				in_mcu : $('#in_mcu').val(),
+				in_rmanager : $('#in_rmanager').val(),
+				deviceId : $('#deviceId').val(),
+				recName : $('#recName').val(),
+				recPwd : $('#recPwd').val(),
+				in_uType : $('input[name="in_uType"]:checked').val(),
+				bitstream :  $('input[name="bitstream"]:checked').val(),
+				nginxFilePath:$('#nginxFilePath').val(),
+				nginx:$('#in_nginx').val()
+			}
+			window.Electron.saveInnerCs(param);
+   		}
+
+   	</script>
+  </body>
+</html>

@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1">
+ <link href="../../res/css/bootstrap.min.css" rel="stylesheet">
+ <!-- <link href="../css/page.css" rel="stylesheet"> -->
+ <style type="text/css">
+   
+  .header{
+      background: #535e6a;
+      color: #fff;
+      cursor: move;
+      height: 45px;
+      line-height: 45px;
+      padding-left: 8px;
+      padding-bottom: 2px;
+    }
+  .header span{
+    display: inline-block;
+    height: 45px;
+    line-height: 45px;
+  }
+  .header .title{
+    font-size: 14px;
+  }
+  .btn2:hover{
+    cursor: pointer;
+  }
+  .btn2 {
+     float: right;
+    margin-right: 16px;
+  }
+
+  .top_div{
+     
+     /*border: 1px solid rgba(51, 51, 51, 0.36);*/
+    /* margin: 15px;*/
+     box-shadow: -3px 2px 8px 0px #999; 
+     /*background-color: #fff;*/
+  }
+  .top_div li{
+    margin-top: 18px;list-style: none;
+  }
+ </style>
+    <title></title>
+  </head>
+  <body style="overflow:hidden;background-color:transparent" >
+  <div class="container-fluid" style="overflow:hidden;">
+ <div class="row top_div">
+     <div class="header">
+          <span class="title" title=""><h4 id="title"></h4></span>
+          <span title="关闭" class="btn2 close-btn"><img src="../img/close_tt.png" alt="关闭"/></span>
+      </div>
+      <div id="video" >
+        
+      </div>
+ 
+</div>
+
+</div>
+
+    <script src="../../res/js/jquery.init.js"></script>
+    <script src="../../res/js/jquery.min.js"></script>
+    <script src="../../res/js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+    var videoList = new Array();
+  $(function(){
+      var url=decodeURI(getUrlParam("url"));
+      var name=decodeURI(getUrlParam("name"));
+  
+       $("#title").text(name);
+       $(".close-btn").click(function(){
+            var sns = new Array();
+            var streamindexs = new Array();
+            var winindexs = new Array();
+            for (var i = 0; i < videoList.length; i++) {
+              var videoStr = videoList[i];
+              sns.push(videoStr.split("_")[0]);
+              streamindexs.push(videoStr.split("_")[1]);
+              winindexs.push(videoStr.split("_")[2]);
+            }
+            
+            /*var webContentsId = window.Electron.remote.getCurrentWindow().getParentWindow().webContents.id;
+            window.Electron.ipcRenderer.sendTo(webContentsId,"closeFayanrenVideo");*/
+            window.Electron.ipcRenderer.send("fayanren_removeWindows",sns,streamindexs,winindexs);
+        });
+      ipcRenderer.on('closeFayanrenWindow',function(event){
+            var sns = new Array();
+            var streamindexs = new Array();
+            var winindexs = new Array();
+            for (var i = 0; i < videoList.length; i++) {
+              var videoStr = videoList[i];
+              sns.push(videoStr.split("_")[0]);
+              streamindexs.push(videoStr.split("_")[1]);
+              winindexs.push(videoStr.split("_")[2]);
+            }
+            
+            window.Electron.ipcRenderer.send("fayanren_removeWindows",sns,streamindexs,winindexs);
+            if(videoList.length == 0){
+              window.Electron.closeCurrWin();
+            }
+            
+      }); 
+      var height = window.screen.height-45;
+      var width = window.screen.width;
+      $('#video').width(width)
+      $('#video').height(height);
+      var left =$('#video').offset().left;
+      var top = $('#video').offset().top;
+      var ltwhArrays = new Array();
+      var urls = new Array();
+      var snList = new Array();
+      var volList = new Array();
+      ltwhArrays.push(left,top,width,height);
+      urls.push(url);
+      snList.push(88);
+      volList.push(100);
+
+      ipcRenderer.send('fyrhookWindow',ltwhArrays,urls,snList,volList, 121);
+
+      ipcRenderer.on('onhook',function(event,snList,streamindexList,winindexList){
+      for (var i = 0; i < snList.length; i++) {
+        videoList.push(snList[i]+"_"+streamindexList[i]+"_"+winindexList[i]);
+      }
+      });
+      ipcRenderer.on('removehook',function(event,sn,video_no){
+          for (var i = 0; i < videoList.length; i++) {
+            var videoStr = videoList[i];
+            if(videoStr.indexOf(sn+"_"+video_no) == 0){
+              videoList.splice(i,1);
+            }
+          }
+     
+          if(videoList.length == 0){
+            window.Electron.closeCurrWin();
+          }
+          
+      });
+      ipcRenderer.on('replaceFayanrenVideo',function(event,name,videoPath){
+            $(".title").text(name);
+            var divList = new Array();
+            divList.push(88);
+            var sns = new Array();
+            var streamindexs = new Array();
+            var winindexs = new Array();
+            var vols = new Array();
+
+            for (var i = 0; i < videoList.length; i++) {
+              var videoStr = videoList[i];
+              sns.push(videoStr.split("_")[0]);
+              streamindexs.push(videoStr.split("_")[1]);
+              winindexs.push(videoStr.split("_")[2]);
+              vols.push(0);
+            }
+          ipcRenderer.send('replaceFayanrenStream',divList,streamindexs,winindexs,vols, videoPath);
+
+      });
+        ipcRenderer.on('onReplaceStream',function(event,result){
+
+          console.log('-----------------videoList-------start------------------------')
+          console.log(videoList)
+          console.log('-------------------videoList-----------end--------dws----------')
+          var dws = result.dsw;
+          console.log('-----------------------------dws----------')
+          console.log(dws)
+          for (var i = 0; i < videoList.length; i++) {
+            var videoStr = videoList[i];
+                var str = videoStr.split("_");
+                var _divId = str[0];
+                var streamindex = str[1];
+                var winIndex = str[2];
+            for (var j = 0; j < dws.length; j++) {
+              var _dwsStr = dws[j];
+                    var dwsA = _dwsStr.split("_");
+              if(_divId == dwsA[0] &&  dwsA[3] == 0){
+                streamindex =  dwsA[1];
+                winIndex = dwsA[2];
+                break;
+              }
+            }
+                  videoList[i] = _divId+'_'+streamindex+'_'+winIndex;
+          }
+
+          console.log('--------start---------------------dws--------videoList--')
+          console.log(videoList)
+
+          console.log('----------end-------------------dws--------videoList--')
+        });
+    })
+   function getUrlParam(name) {
+        var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)"); //构造一个含有目标参数的正则表达式对象
+        var r = window.location.search.substr(1).match(reg);  //匹配目标参数
+        if (r != null) return decodeURI(r[2]); return null; //返回参数值
+    }
+    </script> 
+  </body>
+</html>

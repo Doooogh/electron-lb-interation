@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+    <title>教师主屏（功能）</title>
+
+    <!-- Bootstrap -->
+    <link href="../../res/css/bootstrap.min.css" rel="stylesheet">
+	<link href="../css/hd.css" rel="stylesheet">
+	<link href="../css/index.css" rel="stylesheet">
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="//cdn.bootcss.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="//cdn.bootcss.com/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+<body>
+    <div class="gn">
+		<div class="gnL">
+			<section class="gnT">
+				<a class="icon_close" href="#"></a>
+				<a class="icon_narrow" href="#"></a>
+				<a class="icon_setup" href="#"></a>
+			</section>
+			<section class="gnM">
+				<ul>
+					<li><div class="main"><img src="../img/gn_icon1.png" /><span>VGA最大</span></div></li>
+					<li><div class="main"><img src="../img/gn_icon2.png" /><span>VGA最小</span></div></li>
+					<li><div class="main"><img src="../img/gn_icon3.png" /><span>无VGA</span></div></li>
+					<li class="gn_zd">
+						<div class="main"><img src="../img/gn_icon4.png" /><span>作答</span></div>
+						<div class="gn_zd_box scrollbar">
+							<span>XXXX学校学校学校</span>
+							<span>XXXX学校学校学校</span>
+							<span>XXXX学校学校学校</span>
+							<span>XXXX学校学校学校</span>
+							<span>XXXX学校学校学校</span>
+							<span>XXXX学校学校学校</span>
+							<span>XXXX学校学校学校</span>
+						</div>
+					</li>
+					<li class="gn_lz open">
+						<div class="main">
+							<div class="kslz">
+								<img src="../img/gn_icon5.png" /><span>开始录制</span>
+							</div>
+							<div class="jslz" style="display:none;">
+								<img src="../img/gn_icon6.png" /><span>结束录制</span>
+							</div>
+						</div>
+					</li>
+				</ul>
+			</section>
+			<section class="gnB">
+				<p>授课时长：00:25:12</p>
+			</section>
+		</div>
+	</div>
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="../../res/js/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="../../res/js/bootstrap.min.js"></script>
+	<script>
+		$(document).ready(function() {
+			$(".gn_lz").click(function(){
+				if($(this).hasClass("open") == true){
+					$(this).removeClass("open");
+					$(this).find(".jslz").show();
+					$(this).find(".kslz").hide();
+				}else{
+					$(this).addClass("open");
+					$(this).find(".jslz").hide();
+					$(this).find(".kslz").show();
+				};
+			});
+			var len1 = $(".gn_zd_box span").length;
+			if ( len1 == 1 ){ 
+				$(".gn_zd_box").css("bottom","150px");
+			}else{
+				if ( len1 == 2 ){ 
+					$(".gn_zd_box").css("bottom","110px");
+				};
+			};
+		});
+	</script>
+  </body>
+</html>

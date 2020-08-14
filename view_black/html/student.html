@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+    <title>学生界面（讲课）</title>
+
+    <!-- Bootstrap -->
+    <link href="../../res/css/bootstrap.min.css" rel="stylesheet">
+	<link href="../css/hd.css" rel="stylesheet">
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="//cdn.bootcss.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="//cdn.bootcss.com/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <style type="text/css">
+		.myicon{width:60px;height:45px;display:inline-block;margin-right:10px;}
+    </style>
+</head>
+<body>
+    <div class="hd hd_student" >
+		<section class="hdT" style="/*-webkit-app-region: drag*/" ondblclick="dbClick()">
+			<h1 class="lesson_name">课程名称：教师授课技巧培训</h1>
+			<a class="icon_close" href="#" style="-webkit-app-region: no-drag;"></a>
+			<a class="icon_zoom" href="#" style="-webkit-app-region: no-drag;"></a>
+			<a class="icon_narrow" href="#" style="-webkit-app-region: no-drag;"></a>
+		</section>
+		<section class="hdM" ondblclick="dbClick()">
+			<div id="" class="main1 zscreen" style="z-index:-1;width:49%;height:100%" >
+				<p class="tishi">课程尚未开始</p>
+				<img src="../img/img01.jpg" />
+			</div>
+
+			<div id="" class="main2 div1" style="">
+				<div class="zjr" style="width: 100%;height: 35%;position: relative;top: 10%;">
+				</div>
+				<div class="fyr" style="width: 100%;height: 35%;position: relative;top: 15%;">
+				</div>
+			</div>
+
+			<div id="canvasDiv" style="position: absolute;left:0;top:0;width:100%;height:100%;background: #ffffff; display: none">
+				<div class='avr_canvas_div_class' style="/*background: #ffffff;*/ width:100%; height:100%;background-size: 100% 100%; ">
+					<canvas class='avr_canvas_class' id="drawing" style="/*background: #ffffff;*/ width:100%; height:100%" ></canvas>
+				</div>
+				<div class="func" id="tools" style="display: none;">
+					<div class="func_v func_v_yc" style="float: right;">
+					</div>
+					<div class="func_v func_v_qp" style="float: right;">
+					</div>
+					<div class="func_v func_v_xp" style="float: right;">
+					</div>
+					<div class="func_v func_v_hb" style="float: right;">
+					</div>
+
+				</div>
+				<div class="func_v_hb_box" style="display: none;">
+					<ul class="color clearfix">
+						<li onclick="fillStyle='#0024ff';strokeStyle='#0024ff'"></li>
+						<li onclick="fillStyle='#ffd200';strokeStyle='#ffd200'"></li>
+						<li onclick="fillStyle='#ff7067';strokeStyle='#ff7067'"></li>
+						<li onclick="fillStyle='#ace24c';strokeStyle='#ace24c'"></li>
+						<li onclick="fillStyle='#fb0202';strokeStyle='#fb0202'"></li>
+						<li onclick="fillStyle='#0b1116';strokeStyle='#0b1116'"></li>
+						<li onclick="$('#color').click()"></li>
+						<li style="width: 0px;height: 0px"> <input id="color" type="color" style="width: 0px;height: 0px;border: 0px;padding: 0px;position: relative;top: 100000px;" onchange="fillStyle= this.value;strokeStyle = this.value;"></li>
+					   
+					</ul>
+					<ul class="thickness clearfix">
+						<li>粗细：</li>
+						<li class="thicknessBtn on"  onclick="lineWidth=2"></li>
+						<li class="thicknessBtn"  onclick="lineWidth=6"></li>
+						<li class="thicknessBtn"  onclick="lineWidth=8"></li>
+						<li class="thicknessBtn"  onclick="lineWidth=12"></li>
+					</ul>
+				</div>
+				<div class="func_v_xp_box" style="display: none;">
+					<ul class="eraser clearfix">
+						<li class="on"></li>
+						<li></li>
+						<li></li>
+					</ul>
+				</div>
+			</div>
+		</section>
+		<section class="hdB" ondblclick="dbClick()">
+			<webview id="foo" src="time.html" style="width: 80%;float: left;" preload="../../res/js/preload.js"></webview>
+			<!-- <a onclick="window.Electron.openSetting('setting_stu',400,186,'系统设置')" style="float: right;margin-top: 5px;margin-right: 10px;color: white;">设置</a> -->
+			<a class="myicon icon_setup fr" title="设置" onclick="window.Electron.openSetting('setting_stu',600,186,'系统设置')" href="#"></a>
+		</section>
+	</div>
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="../../res/js/jquery.init.js"></script>
+    <script src="../../res/js/jquery.min.js"></script>
+    <script src="../../res/js/client.js"></script>
+    <script src="../../res/js/canvas.js"></script>
+	<script src="../../res/js/interact.js"></script>
+	<script src="../../res/js/trace.js"></script>
+	<script src="../../res/js/md5.js"></script>
+	<script src="../../res/js/server.js"></script>
+    <script src="../../res/js/ptz.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="../../res/js/bootstrap.min.js"></script>
+	<script src="../js/tools.js"></script>
+	<script src="../js/student.js"></script>
+	<script type="text/javascript">
+		$('a').unbind('mouseenter').unbind('mouseleave');
+	</script>
+  </body>
+</html>

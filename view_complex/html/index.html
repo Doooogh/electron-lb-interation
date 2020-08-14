@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="../../res/css/bootstrap.min.css" rel="stylesheet">
+	<link href="../css/index.css" rel="stylesheet">
+	<link href="../css/hd.css" rel="stylesheet">
+</head>
+<body>
+<div class="gn" style="margin-top: 80px;">
+	<div class="part1_l">
+			<div class="part1_r_btn"></div>
+		</div>
+			<div class="gnL">
+			<section class="gnT">
+				<a class="icon_close" href="#"></a>
+				<!-- <a class="icon_narrow" href="#"></a> -->
+				<!-- <a class="icon_setup" href="#" onclick="opensetting()"></a> -->
+			</section>
+			<section class="gnM">
+				<ul>
+					<li id="pip_vga_max"><div class="main"><img style="height: 35px;" src="../img/gn_icon1.png" /><span>VGA最大</span></div></li>
+					<li id="pip_vga_min"><div class="main"><img style="height: 35px;" src="../img/gn_icon2.png" /><span>VGA最小</span></div></li>
+					<li id="pip_vga_no"><div class="main"><img style="height: 35px;" src="../img/gn_icon3.png" /><span>无VGA</span></div></li>
+					<li id="pip_vga_one"><div class="main"><img style="height: 35px;" src="../img/gn_icon0.png" /><span>VGA</span></div></li>
+					<li id="openCanvas"><div class="main"><img style="height: 35px;" src="../img/gn_icon7.png" /><span>打开白板</span></div></li>
+					<li class="gn_zd">
+						<div class="main"><img style="height: 35px;" src="../img/gn_icon4.png" /><span>作答</span></div>
+						<div class="gn_zd_box scrollbar" id="users">
+
+						</div>
+					</li>
+					<li class="gn_lz open">
+						<div class="main">
+							<div class="kslz">
+								<img id="startRec" src="../img/gn_icon5.png" /><span>开始录制</span>
+							</div>
+							<div class="jslz" style="display:none;">
+								<img id="stopRec" src="../img/gn_icon6.png" /><span>结束录制</span>
+							</div>
+						</div>
+					</li>
+				</ul>
+			</section>
+			<section class="gnB">
+				<p>授课时长：<span id="startTime">00:00:00<span></p>
+			</section>
+		</div>
+	</div>
+</div>
+
+<div class='avr_canvas_div_class' style="/*background: #ec0d0d; */width:100%; height:100%;display: none;">
+	<canvas class='avr_canvas_class' id="drawing" style="/*background: #ec0d0d;*/ width:100%; height:100%;position: absolute;" ></canvas>
+</div>
+
+	<div class="func" id="toolsFunc">
+		<div class="func_v func_v_hb">
+		</div>
+		<div class="func_v func_v_xp">
+		</div>
+		<div class="func_v func_v_qp">
+		</div>
+		<div class="func_v func_v_cd">
+		</div>
+		<div class="func_v func_v_yc" style="float: right;">
+		</div>
+
+	</div>
+	<div class="func_v_hb_box" style="display: none;">
+		
+			<ul class="color clearfix">
+				<li onclick="fillStyle='#0024ff';strokeStyle='#0024ff'"></li>
+				<li onclick="fillStyle='#ffd200';strokeStyle='#ffd200'"></li>
+				<li onclick="fillStyle='#ff7067';strokeStyle='#ff7067'"></li>
+				<li onclick="fillStyle='#ace24c';strokeStyle='#ace24c'"></li>
+				<li onclick="fillStyle='#fb0202';strokeStyle='#fb0202'"></li>
+				<li onclick="fillStyle='#0b1116';strokeStyle='#0b1116'"></li>
+				<li onclick="$('#color').click()"></li>
+				<li style="width: 0px;height: 0px"> <input id="color" type="color" style="width: 0px;height: 0px;border: 0px;padding: 0px;position: relative;top: 100000px;" onchange="fillStyle= this.value;strokeStyle = this.value;"></li>
+			   
+			</ul>
+			<ul class="thickness clearfix">
+				<li>粗细：</li>
+				<li class="thicknessBtn on"  onclick="lineWidth=2"></li>
+				<li class="thicknessBtn"  onclick="lineWidth=6"></li>
+				<li class="thicknessBtn"  onclick="lineWidth=8"></li>
+				<li class="thicknessBtn"  onclick="lineWidth=12"></li>
+			</ul>
+	</div>
+	<div class="func_v_xp_box" style="display: none;">
+		<ul class="eraser clearfix">
+			<li class="on"></li>
+			<li></li>
+			<li></li>
+		</ul>
+	</div>
+
+    <script src="../../res/js/jquery.init.js"></script>
+    <script src="../../res/js/jquery.min.js"></script>
+    <script src="../../res/js/client.js"></script>
+    <script src="../../res/js/canvas.js"></script>
+	<script src="../../res/js/interact.js"></script>
+	<script src="../../res/js/trace.js"></script>
+	<script src="../../res/js/server.js"></script>
+    <script src="../../res/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="../../res/js/jquery.nicescroll.js"></script>
+	<script src="../js/tools.js"></script>
+	<script src="../js/index.js"></script>
+  </body>
+</html>

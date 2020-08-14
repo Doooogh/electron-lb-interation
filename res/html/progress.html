@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+       <title>版本下载</title>
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <script src="../js/jquery.init.js"></script>
+    <script src="../js/jquery.min.js"></script>
+    <script src="../js/bootstrap.min.js"></script>
+    <script src="../js/server.js"></script>
+
+	</head>
+	<body>
+		<script>
+			/*var i = 0;
+			var mDiv = setInterval(function(){
+				if(i>=100){
+					clearInterval(mDiv);
+				}
+
+				i++;
+			},250)*/
+			ipcRenderer.on('percentage',function(event,i){
+
+            	var myDiv = document.getElementById("myDiv");
+				myDiv.style.width = Math.round(i)+"%";
+				myDiv.innerText = Math.round(i)+"%";
+      		}); 
+		</script>
+		下载中...
+		<div class="container" style="margin-top: 20px;">
+			<div class="row">
+				<div class="progress" style="margin: 0 auto;border: 1px solid #000;width: 450px;">
+				  <div id="myDiv" class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" style="width: 0%;">
+					0%
+				  </div>
+				</div>
+			</div>
+		</div>
+	</body>
+
+</html>

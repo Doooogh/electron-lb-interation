@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>jquery任务栏</title>
+	
+	<style type="text/css">
+	
+	*{
+		margin:0;padding:0;
+	}
+	.task-bar{
+		border: 2px solid #62a9f1;
+		position: absolute;
+		z-index: 999999;
+		width: 248px;
+		height: 100px;
+	}
+	.task-bar>.header{
+		background: #62a9f1;
+		color: #fff;
+		cursor: move;
+		height: 25px;
+		line-height: 25px;
+		padding-left: 2px;
+		padding-bottom: 2px;
+	}
+	.task-bar>.header span{
+		display: inline-block;
+		height: 25px;
+		line-height: 25px;
+	}
+	.task-bar>.header .title{
+		font-size: 14px;
+	}
+	.task-bar>.content{
+		background: #fff;
+		height: calc(100% - 27px);
+		width: 100%;
+	}
+
+	.task-bar .task-img{
+		float: left;
+		margin-left: 15px;
+		margin-top: 7px;
+		width: 54px;
+	}
+
+	.task-bar .task-text{
+		color:black;
+		float: left;
+		margin-left: 4px;
+		margin-top: 25px;
+		font-size: larger;
+	}
+	.btn2:hover{
+    cursor: pointer;
+	  }
+	  .btn2 {
+	     float: right;
+	    margin-right: 8px;
+	  }
+	</style>
+
+</head>
+<body>
+	<div id="box3" class="box">
+		<div class="task-bar">
+			<div class="header">
+				<span class="title" title="">提示信息</span>
+				<span title="关闭" class="btn2 close-btn" ><img src="../img/close.png" alt="关闭"/></span>
+			</div>
+			<div class="content"><img class="task-img" src="../img/timg.png" ><div class="task-text"><span id="message"></span></div></div>
+		</div>
+	</div>
+</body>
+    <script src="../../res/js/jquery.init.js"></script>
+    <script src="../../res/js/jquery.min.js"></script>
+    <script src="../../res/js/bootstrap.min.js"></script>
+	<script type="text/javascript">
+		$(function(){
+			 $(".close-btn").click(function(){
+			 	$('#message').html('');
+		     	window.Electron.remote.getCurrentWindow().hide();
+		      });
+		})
+		window.Electron.ipcRenderer.on('onMsg',function(event,msg){
+			$('#message').html(msg);
+			if(msg == ''){
+				window.Electron.remote.getCurrentWindow().hide();
+			}
+		});
+	</script>
+</html>

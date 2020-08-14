@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+  <title></title>
+  <script type="text/javascript">  
+   window.nodeRequire = require;
+   delete window.require;
+   delete window.exports;
+   delete window.module;
+
+ </script>
+
+ <!-- Bootstrap -->
+ <link href="../../res/css/bootstrap.min.css" rel="stylesheet">
+ <!-- <link href="../css/page.css" rel="stylesheet"> -->
+ <style type="text/css">
+   
+  .header{
+      background: #535e6a;
+      color: #fff;
+      cursor: move;
+      height: 25px;
+      line-height: 25px;
+      padding-left: 8px;
+      padding-bottom: 2px;
+    }
+  .header span{
+    display: inline-block;
+    height: 25px;
+    line-height: 25px;
+  }
+  .header .title{
+    font-size: 14px;
+  }
+  .btn2:hover{
+    cursor: pointer;
+  }
+  .btn2 {
+     float: right;
+    margin-right: 8px;
+  }
+  .file_path{
+      width: 539px;
+      height: 37px;
+      border: 0px;
+      background-color: rgba(204, 204, 204, 0.39);
+      padding-left: 19px;
+  }
+  .file_choose{
+      margin-bottom: 4px;
+      background-color: #535e6a;
+      color: #fff;
+      font-size: 15px;
+  }
+  .top_div{
+     height: 173px; 
+     border: 1px solid rgba(51, 51, 51, 0.36);
+    /* margin: 15px;*/
+     box-shadow: -3px 2px 8px 0px #999; 
+     background-color: #fff;
+  }
+  .top_div li{
+    margin-top: 10px;list-style: none;
+  }
+  #links {text-align:center;}
+
+  #links ul{list-style-type:none;}
+
+
+ </style>
+</head>
+<body style="background-color: transparent;"><!-- rgba(238, 238, 238, 0.18) -->
+  <div class="container-fluid">
+ <div class="row top_div">
+     <div class="header">
+          <span class="title" title="">设置</span>
+          <span title="关闭" class="btn2 close-btn"><img src="../img/close.png" alt="关闭"/></span>
+      </div>
+      <div id="links">
+      <ul style="margin-top:40px;">
+      <li>
+         
+          <label class="btn btn_primary file_choose" id="changeFilePath">推黑板</label>
+          <label class="btn btn_primary file_choose" for="blackFilePath">推题</label>
+          <input type="file" id="blackFilePath" style="position:absolute; clip:rect(0,0,0,0);" >
+      </li>
+      <li>
+         
+          <label class="btn btn_primary file_choose" id="closeBlack">关闭黑板</label>
+          <label class="btn btn_primary file_choose" id="closeCanvas">关闭推题</label>
+         
+      </li>
+     </ul>
+     </div>
+ 
+ 
+</div>
+
+</div>
+<script type="text/javascript">
+ const remote = nodeRequire('electron').remote;
+ var ipcRenderer = nodeRequire('electron').ipcRenderer;
+ const config = remote.require("./conf.js");
+  var currentWindow = remote.getCurrentWindow();
+</script>
+<script src="../../res/js/jquery.min.js"></script>
+
+<script src="../../res/js/bootstrap.min.js"></script>
+<script type="text/javascript">
+  let streamindex;
+  $(document).ready(function() {
+  
+      $("#blackFilePath").change(function(){
+         var file = $("#blackFilePath").val();
+         var filePath = this.files[0].path;
+         var AllImgExt=".jpg|.jpeg|.bmp|.png|";
+         var extName = file.substring(file.lastIndexOf(".")).toLowerCase();//（把路径中的所有字母全部转换为小写）        
+        if(AllImgExt.indexOf(extName+"|")==-1)        
+        {
+            ErrMsg="该文件类型不允许上传。请上传 "+AllImgExt+" 类型的文件，当前文件类型为"+extName;
+            alert(ErrMsg);
+            return false;
+        } else{
+           
+            window.Electron.uploadFile(filePath,function(fileName){
+               //给当前父窗口直接发送消息
+            var webContentsId = window.Electron.remote.getCurrentWindow().getParentWindow().webContents.id;
+            window.Electron.ipcRenderer.sendTo(webContentsId,"operCancas",fileName);
+            currentWindow.close();
+          });
+            
+        }
+    
+      });
+
+  });
+  $('.close-btn').click(function(){
+    currentWindow.close();
+  });
+  $("#closeCanvas").click(function(){
+      var webContentsId = window.Electron.remote.getCurrentWindow().getParentWindow().webContents.id;
+      window.Electron.ipcRenderer.sendTo(webContentsId,"closeCanvas");
+       currentWindow.close();
+  });
+</script>
+</body>
+</html>

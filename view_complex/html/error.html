@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+     <script src="../js/jquery.min.js"></script>
+    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+    <title></title>
+  </head>
+  <body onload="onBodyLoad()">
+    <h1><font id="errorContent"></font>！</h1>
+    <script type="text/javascript">
+        function onBodyLoad(){
+          // alert(getUrlParam('errorMsg'))
+          var errorMsg = "";
+          if(getUrlParam('errorMsg') == 'openInPlatform'){
+            errorMsg = "请在平台中打开互动客户端！";
+          }else if(getUrlParam('errorMsg') == 'getCourseError'){
+             errorMsg = "获取课程信息失败！";
+          }else if(getUrlParam('errorMsg') == 'no_course'){
+            errorMsg = "暂无课程！";
+          }
+          document.getElementById('errorContent').innerHTML = errorMsg;
+        }
+        function getUrlParam(name) {
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)"); //构造一个含有目标参数的正则表达式对象
+            var r = window.location.search.substr(1).match(reg);  //匹配目标参数
+            if (r != null) return unescape(r[2]); return null; //返回参数值
+        }
+    </script>
+  </body>
+</html>

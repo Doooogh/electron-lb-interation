@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+    <title></title>
+    	<script type="text/javascript">
+    	 	window.nodeRequire = require;
+			delete window.require;
+			delete window.exports;
+			delete window.module;
+		</script>
+    <!-- Bootstrap -->
+    <link href="../../res/css/bootstrap.min.css" rel="stylesheet">
+	<link href="../css/page.css" rel="stylesheet">
+    <style>
+    input[type="color"]::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+        input[type="color"]::-webkit-color-swatch {
+            border: 0;
+        }
+    .fd {position:fixed;z-index:1;width:calc(100% - 20px)!important;height:calc(100% - 30px)!important;}
+    .fd_b{position: fixed!important;left: 0;right: 0;z-index: 2;bottom:0;height:auto!important;}
+    .photofocus_btnl:active{background: url(../img/banner-btn-1.png) no-repeat;background-size: 100% 100%;}
+    .photofocus_btnr:active{background: url(../img/banner-btn-1.png) no-repeat;background-size: 100% 100%;}
+    </style>
+</head>
+<body class="teachbody" onresize="onresize()" onselectstart="return false">
+	<div id="textDiv"></div>
+    <div class="container-fluid teachpage">
+		<div class="row">
+			<div class="col-md-9">
+				<div class="ppt">
+				<!-- 新增功能栏 -->
+					<div id="tools" class="ppt-gn" style="display: none;">
+						<ul class="clearfix">
+							<li><a href="#" onclick="lineMode='any'"><div class="ppt-gnicon hb"></div></br>画笔</a></li>
+							<li><a href="#" onclick="lineMode='rect'"><div class="ppt-gnicon jx"></div></br>矩形</a></li>
+							<li><a href="#" onclick="lineMode='circle'"><div class="ppt-gnicon x"></div></br>圆</a></li>
+							<li><a href="#" onclick="lineMode='text'"><div class="ppt-gnicon wz"></div></br>文字</a></li>
+							<li><a href="#" onclick="lineMode='choose'"><div class="ppt-gnicon cx"></div></br>撤销</a></li>
+							<li><a href="#" onclick="resetEverything()"><div class="ppt-gnicon qp"></div></br>清屏</a></li>
+							<li style="width: 100%;color: #f0f0f0;">字号<input type="number" name="points" min="10" max="40"  step="3" value="12" onchange="fontSise = Number(this.value);" style="color:#0a0a0a;width: 42px;margin: 5px 0px 5px 11px"/></li>
+						</ul>
+						<div class="bottom">
+							<a class="on yuan1" href="#" onclick="changeLineWidth('2',this)"></a>
+							<a class="yuan2" href="#" onclick="changeLineWidth('3',this)"></a>
+							<a class="yuan3" href="#" onclick="changeLineWidth('4',this)"></a>
+							<a class="ys" href="#"><input style="width:18px;height:18px;border: 0; padding: 0;background-color:#eee;" id="color" type="color" onchange="fillStyle = this.value;strokeStyle = this.value;"  /></a>
+						</div>
+						
+					</div>
+					<div id="max_min" style="position:absolute;right: 25px;bottom: 25%;z-index: 2;">
+						<img src="../img/pdf-max.png" onclick="pdfReader(5);" style="width: 35px;">
+						<br/>
+						<img src="../img/pdf-min.png" onclick="pdfReader(-5);" style="width: 35px;margin-top: 5px;">
+					</div>
+					<!-- 新增功能栏 -->
+					<!--<h5 class="teachpage-title">主屏</h5>-->
+					<div class="photofocus">
+						<div class="photofocus_btnl"></div>
+						 <div class="photofocus_btnr"></div>
+						<div id="content" style="overflow: scroll;width: 100%;height: 80%;background-image: url('../img/img01.jpg');background-size:100% 100%">
+							<div id="toStartTime" style="margin-top: 100px;margin-left: 100px;display: none;">
+								<h1 style="font-size: 36px;color: white;">课程尚未开始</h1>
+								<h2 style="font-size: 32px;color: white;">距上课时间还有<span class="timespan" style="margin-left: 10px;"></span></h2>
+							</div>
+							<center style="height:100%;">
+							<div id="canvasDiv" style="position:relative;height: 100%;">
+								<canvas id="drawing" style="position: absolute;/*left:0;top:0;*/z-index: -1;"></canvas>
+								<img id="pdfImg" style="cursor:pointer" src="" />
+							</div>
+							</center>
+						</div>
+						
+						<div class="focusmallimgbox" >
+							<ul id="courseFile" class="focusmallimg">
+								
+							</ul>
+						</div>
+
+
+						<!-- focusmallimgbox -->
+					</div><!-- photofocus -->
+				</div><!-- ppt -->
+				<div class="tospeak">
+					<div id="leftFooter" class="tospeak-view">
+						<ul class="function">
+							<!-- <li onclick="requestRaiseHand(this)" title="举手"><div class="jushou"></div></li> -->
+
+							<li id="video_display" onclick="getVideoStr(this)" title="视频"><div class="shexiang"></div></li>
+							<li id="setting" onclick="openSetting(this)" title="设置"><div class="shezhi"  ></div></li>
+							<li id="fullScreen" onclick="fullScreen(this)" title="全屏"><div class="quanping" ></div></li>
+							
+						</ul>
+					</div><!-- tospeak-view -->
+					<div class="tospeak-list">
+						<ul>
+							<li id="zhujianren">
+								<img src="../img/default.png" />
+								<div style="height: 20px;color:white;"><font id="zhujianrenName"></font></div>
+							</li>
+							<li id="fayanren">
+								<img src="../img/default.png" />
+								<div style="height: 20px;color:white;"><font id="fayanrenName"></font></div>
+							</li>
+							<li id="myself" >
+								<img src="../img/default.png" />
+								<div style="height: 20px;color:white;"></div>
+							</li>
+						</ul>
+					</div><!-- tospeak-list -->
+				</div><!-- students -->
+			</div><!-- col-md-9 -->
+			<div class="col-md-3">
+				<div class="teachimg" >
+					<div style="height: 25px;line-height: 25px;background: #d2d2d2;position: relative;text-align:center;font-size: 12px;color: black;font-weight: bold;">
+						<ul><li class="on">课程简介</li></ul>
+					</div>
+					<div style="height: calc(100% - 25px);background-color: #fff;padding: 5px 10px;overflow-y: scroll;">
+						<p id="courseDes" style="text-indent:2em;word-break: break-all;"></p>
+					</div>
+				</div><!-- teachimg -->
+				<div class="slideTxtBox question">
+					<div class="hd">
+						<ul><li class="on">已进入（<font id="isJoinNum">0</font>）</li>
+							<!-- <li>未进入（<font id="noJoinNum">0</font>）</li> -->
+						</ul>
+					</div>
+					<div class="bd">
+						<ul id="isJoin">
+							<li><input type="text" placeholder="输入检索人" onchange="searchUser(this)" />
+								<!-- <a href="#" class="btn btn-default btn-xs active" role="button">搜索</a> -->
+							</li>
+							<!-- <li class="answering"><span class="name">方江</span>正在发言1</li> 
+							<li><div class="handup"></div><span class="name">子</span><a href="#we" class="btn btn-default btn-xs active answer" role="button">回答</a></li> -->
+						</ul>
+						<ul id="noJoin" style="display: none;">
+							<li><input type="text" placeholder="输入检索人" /><a href="#" class="btn btn-default btn-xs active" role="button">搜索</a></li>
+						</ul>
+					</div>
+				</div><!-- slideTxtBox -->
+				<div class="slideTxtBox chat">
+					<div class="hd">
+						<ul><li class="on">聊天</li></ul>
+					</div>
+					<div class="bd">
+						<ul id="hdkt_msgView">
+							<li><input type="text" id="hdkt_msgInputBox"/><button type="button" class="btn btn-primary btn-sm" onclick="hdkt_sendMsg()">发送</button></li>
+						</ul>
+						
+					</div>
+				</div><!-- slideTxtBox -->
+			</div><!-- col-md-3 -->
+		</div>
+	</div>
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script type="text/javascript">
+    	const remote = nodeRequire('electron').remote;
+		var ipcRenderer = nodeRequire('electron').ipcRenderer;
+		const config = remote.require("./conf.js");
+    </script>
+	<script src="../../res/js/jquery.min.js"></script>
+	<script src="../../res/js/client.js"></script>
+	<script src="../../res/js/interact.js"></script>
+	<script src="../../res/js/trace.js"></script>
+	<script src="../../res/js/canvas.js"></script>
+	<script src="../../res/js/server.js"></script>
+    <script src="../../res/js/bootstrap.min.js"></script>
+    <script src="../../res/js/jquery.SuperSlide.2.1.1.source.js"></script>
+	<script>
+		$(document).ready(function() {
+			$(".photofocus .focusbigimg li").css("width",($(".ppt").width()));
+			$(".photofocus").slide({ 
+				mainCell:".focusmallimg",
+				titCell:".focusmallimg li", 
+				prevCell:".photofocus_btnl",
+				nextCell:".photofocus_btnr",
+				effect:"left",
+				trigger:"click",
+				vis:4,
+				scroll:1});
+			$(".slideTxtBox").slide({trigger:"click"});
+
+			$(".photofocus .photofocus_btnl").css("width",(0.5*$(".photofocus .photofocus_btnl").height()));
+			$(".photofocus .photofocus_btnr").css("width",(0.5*$(".photofocus .photofocus_btnr").height()));
+
+
+			//canvas w,h
+
+			 document.getElementById("drawing").width = document.getElementById("pdfImg").width;
+			 document.getElementById("drawing").height = document.getElementById("pdfImg").height;
+			//默认颜色
+			document.getElementById("color").value = "#ff0000";
+			fillStyle = document.getElementById("color").value;
+			strokeStyle = document.getElementById("color").value;
+
+			//加载主讲视频
+			var left = $('.teachimg').offset().left;
+			var top = $('.teachimg').offset().top;
+			var width = $('.teachimg').width();
+			var height = $('.teachimg').height();
+
+
+			$("#content").resize(function(){
+				var left = $('#content').offset().left;
+				var top = $('#content').offset().top;
+				var width = $('#content').width();
+				var height = $('#content').height();
+				if(isFullScreen){
+					var streamIndex ;
+					var winIndex ; 
+					var stramIndexs = new Array();
+					var mainWinindexs = new Array();
+					for (var i = 0; i < videoList.length; i++) {
+						var videoStr = videoList[i];
+						var str = videoStr.split("_");
+						streamIndex = str[1];
+						winIndex = str[2];
+						stramIndexs.push(streamIndex);
+						mainWinindexs.push(winIndex);
+					}
+					ipcRenderer.send('removeAllWinAndMain',stramIndexs,mainWinindexs,left,top,width,height);
+				}else{
+					ipcRenderer.send('moveMainWindow',left,top,width,height);
+				}
+			});
+
+			$("#myself").resize(function(){
+				if(!isFullScreen){
+					for (var i = 0; i < videoList.length; i++) {
+						var videoStr = videoList[i];
+						var str = videoStr.split("_");
+						var sn = str[0];
+						var streamindex = str[1];
+						var winIndex = str[2];
+						if(str[0] == my_mid){
+							hookMyselfWindow(true,streamindex,winIndex);
+						}
+					}
+				}
+			});
+
+			$("#fayanren").resize(function(){
+				if(!isFullScreen){
+					for (var i = 0; i < videoList.length; i++) {
+						var videoStr = videoList[i];
+						var str = videoStr.split("_");
+						var sn = str[0];
+						var streamindex = str[1];
+						var winIndex = str[2];
+						if(str[0] == fayanren){
+							hookWindow(sn,streamindex,'',true,winIndex);
+						}
+					}
+				}
+			});
+
+			$("#zhujianren").resize(function(){
+				if(!isFullScreen){
+					for (var i = 0; i < videoList.length; i++) {
+						var videoStr = videoList[i];
+						var str = videoStr.split("_");
+						var sn = str[0];
+						var streamindex = str[1];
+						var winIndex = str[2];
+						if(str[0] == zhujianren){
+							// hookWindow(sn,streamindex,'',true,winIndex);
+							hookSpeakerWindow(sn,streamindex,'',true,streamindex,winIndex);
+						}
+					}
+				}
+			});
+
+			Server.getLessonInfo(getUrlParam("lessonId"),getUrlParam("token"),function(data){
+				console.log(data)
+				courseStartTime = data.startTime;
+				$('title').html(data.lessonName);
+				toStartTime(courseStartTime);
+				var html = "";
+				// for(var i = 0;i<data.course.users.length;i++){
+				// 	html += '<li id="'+data.course.users[i].id+'"><span class="name">'+data.course.users[i].name+'</span></li>';
+				// }
+				 // $('#noJoin').append(html);
+				 // $('#noJoinNum').html(data.course.users.length);
+				 if(data.course){
+				 	$('#courseDes').html(data.course.description);
+				 }
+				let deviceId;
+				let classroomName;
+				if(data.classroom){
+					isClassroom = true;
+					classroomId = data.classroomId;
+				}
+				Server.getUserInfo(getUrlParam("id"),function(data){
+				if(isClassroom){
+					Server.getClassroomInfo(classroomId,function(classroom_result){
+						deviceId = classroom_result.liveUrl;
+						classroomName = classroom_result.classroomName;
+						connect(classroomName,data.userId,getUrlParam("roomId"),'user','recordCastClient',[],'0',false,false);
+						isClassroom = true;
+						$('#video_display').hide();
+					})
+				}else{
+					classroomName = data.realname;
+					connect(classroomName,data.userId,getUrlParam("roomId"),'user','recordCastClient',[],'0',false,false);
+				}
+			})
+		})
+
+			
+			ipcRenderer.on('video',function(event,result){
+				
+				if(result.code == 0){
+					// console.log(result);
+					if(result.type == "openStream"){
+						// console.log(result.msg);
+						videoList.push(my_mid+"_"+result.streamindex+"_"+result.winindex);
+					}else if(result.type == "sendStream"){//入会推流
+						// alert(result.url)
+						isOpenStr =true;
+						var video_no = 0;
+						in_url(video_no,result.url);
+					}
+				}else{
+					alert(result.msg)
+				}
+				
+			});
+
+
+			ipcRenderer.on('fullScreen',function(event,_isFullScreen,streamindex,winIndex){
+
+				if(_isFullScreen){
+
+					contentWidth = $('#content').width();
+					contentHeight = $('#content').height();
+
+					$('#content').addClass('fd');
+					$('#leftFooter').addClass('fd_b');
+					$('#tools').css('position','fixed').css('right','50px').css('top','20px');
+					$('#max_min').css('position','fixed').css('right','50px');
+					$('.photofocus_btnr').css('position','fixed').css('bottom','15%').css('right','50px');
+				}else{
+					$('#fullScreen').css("background","");
+					isFullScreen = false;
+					$('#content').removeClass('fd');
+					$('#leftFooter').removeClass('fd_b');
+					$('#tools').css('position','absolute').css('right','25px').css('top','10px');
+					$('#max_min').css('position','absolute').css('right','25px');
+					$('.photofocus_btnr').css('position','absolute').css('bottom','6.7%').css('right','10px');
+				}
+			});
+
+
+			ipcRenderer.on('onhook',function(event,sn,video_no,winindex){
+				console.log("onhook------"+video_no+"----------"+winindex);
+				videoList.push(sn+"_"+video_no+"_"+winindex);
+			});
+
+			ipcRenderer.on('stopLive',function(event){
+				if(!isClassroom){
+					ipcRenderer.send("stopLive");
+				}else{
+					Server.stopAVConf(classroomId,getUrlParam("token"),function(result){
+						ipcRenderer.send("stopLive");
+					});
+				}
+			});
+
+			ipcRenderer.on('process',function(event,process){
+				console.log(process);
+			});
+
+			ipcRenderer.on('removehook',function(event,sn,video_no){
+				for (var i = 0; i < videoList.length; i++) {
+					var videoStr = videoList[i];
+					if(videoStr.indexOf(sn+"_"+video_no) == 0){
+						videoList.splice(i,1);
+						isOpenStr = false;
+						requestCloseVideo(sn,0);
+						break;
+					}
+				}
+			});
+
+			ipcRenderer.on('settingClose',function(event){
+				$('#setting').css("background","");
+				isOpenSetting = false;
+			});
+
+			//聊天功能
+			//回车键发送消息功能
+			$('#hdkt_msgInputBox').on('keypress',function(event){ 
+		         if(event.keyCode == 13)      
+		         {  
+		             hdkt_sendMsg();
+		         }  
+
+		    });
+
+		});
+
+
+		function hdkt_layout(){
+			if(isClassroom){
+				Server.startAVConf(classroomId,getUrlParam("token"),0,function(result){
+					// console.log(result);
+					if(result.liveStatus == 3){
+						//检查是否推流入会
+						if(!is_send_url){
+							var url = result.liveAddr.lo[0];
+							var video_no = 0;
+							in_url(video_no,url);
+							is_send_url = true;
+							hookMyselfWindowUrl(my_mid,video_no,url);
+						}
+					}
+				})
+			}
+		}
+		var initScale ;//长宽比
+		var widthScale ;//宽度初始化比例
+		var pdfScale ; //pdf缩放比例
+		function slideChange(index){
+			if($(".focusmallimg li").length == index){
+				index = 0;
+			}
+			console.log("index="+index+"----ppt_page"+ppt_page);
+			var src = $(".focusmallimg li:eq("+index+") img").attr("src");
+			ppt_page = index;
+			changeCourseFile(src,ppt_name,ppt_page);
+		}
+		function changeCourseFile(src,pptName,pptPage){
+			drawingDisabled = false;		
+			document.getElementById("drawing").style.zIndex = 1;
+			$('#pdfImg').attr("src",src);
+			document.getElementById('pdfImg').onload=function(){
+				document.getElementById("pdfImg").height = $("#content").height()-17;
+
+				widthScale = document.getElementById("pdfImg").width/($("#content").width()-17);
+				pdfScale = widthScale;
+				if(!initScale){
+					initScale = document.getElementById("pdfImg").width/document.getElementById("pdfImg").height;
+				}else{
+					document.getElementById("pdfImg").height = document.getElementById("pdfImg").width/initScale;
+				}
+				document.getElementById("drawing").width = document.getElementById("pdfImg").width;
+				document.getElementById("drawing").height = document.getElementById("pdfImg").height;
+				ppt_name = pptName;
+				ppt_page = pptPage;
+				renderAllPaths();
+			}
+		}
+
+		function hdkt_turn_to_page_callback(page){
+			drawingDisabled = false;		
+			document.getElementById("drawing").style.zIndex = 1;
+			jQuery("#courseFile li:eq("+page+")").trigger("click");
+			document.getElementById('pdfImg').onload=function(){
+				document.getElementById("pdfImg").height = $("#content").height()-17;
+				widthScale = document.getElementById("pdfImg").width/($("#content").width()-17);
+				document.getElementById("drawing").width = document.getElementById("pdfImg").width;
+				document.getElementById("drawing").height = document.getElementById("pdfImg").height;
+				ppt_page = page;
+				widthScale = document.getElementById("pdfImg").width/($("#content").width()-17);
+				pdfScale = widthScale;
+				if(!initScale){
+					initScale = document.getElementById("pdfImg").width/document.getElementById("pdfImg").height;
+				}else{
+					document.getElementById("pdfImg").height = document.getElementById("pdfImg").width/initScale;
+				}
+				renderAllPaths();
+			}
+		}
+
+		function pdfReader(_scale){
+			if(pdfScale == undefined){
+				alert("请打开课件！");
+				return;
+			}
+			if(_scale > 0 && pdfScale >= 1) {
+				// alert("当前课件已放大至最大！");
+				return;
+			}
+			var index = pdfScale - widthScale;
+			if(_scale < 0 && index <= 0){
+				// alert("当前课件已缩放至最小！");
+				return;
+			}
+			pdfScale = pdfScale + _scale/100;
+			if(pdfScale > 1){
+				pdfScale = 1;
+			}else if(pdfScale < widthScale){
+				pdfScale = widthScale;
+			}
+			var contentWidth = $("#content").width();
+			document.getElementById("pdfImg").width = contentWidth*pdfScale-17;
+			document.getElementById("pdfImg").height = document.getElementById("pdfImg").width/initScale;
+			document.getElementById("drawing").width = document.getElementById("pdfImg").width;
+			document.getElementById("drawing").height = document.getElementById("pdfImg").height;
+			renderAllPaths();
+		}
+
+		function changeLineWidth(_lineWidth,_this){
+			lineWidth = _lineWidth;
+			$(_this).siblings().removeClass("on");
+			$(_this).addClass("on");
+		}
+
+		var isFullScreen = false;
+		function fullScreen(_this){
+			if(!isFullScreen){
+				$(_this).css("background","#484849");
+				isFullScreen = true;
+			}else{
+				$(_this).css("background","");
+				isFullScreen = false;
+			}
+			
+			ipcRenderer.send('fullScreen');
+		}
+
+
+		var isOpenSetting = false;
+
+		function openSetting(_this){
+			if(!isOpenSetting){
+				$(_this).css("background","#484849");
+				isOpenSetting = true;
+			}else{
+				$(_this).css("background","");
+				isOpenSetting = false;
+			}
+			
+			ipcRenderer.send('setting');
+		}
+
+
+		var isOpenStr = false;
+		function getVideoStr(_this){
+			if(isOpenStr){
+				var streamIndex ;
+				for (var i = 0; i < videoList.length; i++) {
+					var videoStr = videoList[i];
+					if(videoStr.indexOf(my_mid+"_") == 0){
+						var str = videoStr.split("_");
+						streamIndex = str[1];
+						break;
+					}
+				}
+				if(streamIndex){
+					removeWindow(my_mid,streamIndex);
+					$(_this).css("background","");
+				}
+				return;
+			}
+			hookMyselfWindow();
+			$(_this).css("background","#484849");
+		}
+
+		function hookMyselfWindow(move,streamindex,winIndex){
+			var left = $('#myself').offset().left;
+			var top = $('#myself').offset().top;
+			var width = $('#myself').width();
+			var height = $('#myself').height();
+			if(move){
+				ipcRenderer.send('moveWindow',left,top,width,height,streamindex,winIndex);
+			}else{
+				ipcRenderer.send('getVideoStr',left,top,width,height,my_room);
+			}
+		}
+
+		function hookWindow(sn,streamindex,url,move,winIndex){
+			var left = $('#fayanren').offset().left;
+			var top = $('#fayanren').offset().top;
+			var width = $('#fayanren').width();
+			var height = $('#fayanren').height();
+			if(move){
+				ipcRenderer.send('moveWindow',left,top,width,height,streamindex,winIndex);
+			}else{
+				if(fayanren && fayanren != my_mid){
+					var streamIndex ;
+					for (var i = 0; i < videoList.length; i++) {
+						var videoStr = videoList[i];
+						if(videoStr.indexOf(fayanren+"_") == 0){
+							var str = videoStr.split("_");
+							streamIndex = str[1];
+							break;
+						}
+					}
+					removeWindow(fayanren,streamIndex);
+				}
+				fayanren = sn;
+				if(sn == my_mid) return;//发言人是本人的情况下不显示视频
+				// var peer = findRemotePeer(sn);
+				// $("#fayanrenName").html(peer.client_name);
+				ipcRenderer.send('hookWindow',left,top,width,height,url,sn,streamindex);
+			}
+
+		}
+
+		function hookMyselfWindowUrl(sn,video_no,url,move,streamindex,winIndex){
+			var left = $('#myself').offset().left;
+			var top = $('#myself').offset().top;
+			var width = $('#myself').width();
+			var height = $('#myself').height();
+			// console.log("streamindex:"+streamindex+"-winIndex:"+winIndex+"-left:"+left+"-top:"+top+"-width:"+width+"-height:"+height);
+			if(move){
+				ipcRenderer.send('moveWindow',left,top,width,height,streamindex,winIndex);
+			}else{
+				//加载自己的视频，关闭音量
+				ipcRenderer.send('hookWindow',left,top,width,height,url,sn,video_no,true);
+			}
+		}
+
+		function hookSpeakerWindow(sn,video_no,url,move,streamindex,winIndex){
+			var left = $('#zhujianren').offset().left;
+			var top = $('#zhujianren').offset().top;
+			var width = $('#zhujianren').width();
+			var height = $('#zhujianren').height();
+			console.log("streamindex:"+streamindex+"-winIndex:"+winIndex+"-left:"+left+"-top:"+top+"-width:"+width+"-height:"+height);
+			if(move){
+				ipcRenderer.send('moveWindow',left,top,width,height,streamindex,winIndex);
+			}else{
+				if(zhujianren){
+					for (var i = 0; i < videoList.length; i++) {
+						var videoStr = videoList[i];
+						if(videoStr.indexOf(zhujianren+"_") == 0){
+							var str = videoStr.split("_");
+							var	streamIndex = str[1];
+							var winindex = str[2];
+							ipcRenderer.send('removeWindow',zhujianren,streamIndex,winindex);
+						}
+					}
+				}
+				zhujianren = sn;
+				var peer = findRemotePeer(sn);
+				$("#zhujianrenName").html(peer.client_name);
+				ipcRenderer.send('hookWindow',left,top,width,height,url,sn,video_no);
+			}
+		}
+
+		function removeWindow(sn,video_no){
+			for (var i = 0; i < videoList.length; i++) {
+				var videoStr = videoList[i];
+				if(videoStr.indexOf(sn+"_"+video_no) == 0){
+					var winindex = videoStr.replace(sn+"_"+video_no+"_","");
+					ipcRenderer.send('removeWindow',sn,video_no,winindex);
+				}
+			}
+		}
+
+		function initPdf(sn,urls,page_no){
+			var htmlContent = '';
+		    for(var i=0;i<urls.length;i++){
+		    	htmlContent += ' <li onclick=\'changeCourseFile("'+urls[i]+'","my_ppt",'+i+')\'><img src="'+urls[i]+'" alt="" /><span></span></li>';
+		    }
+		    jQuery("#courseFile").html(htmlContent);
+		    $(".photofocus .focusbigimg li").css("width",($(".ppt").width()));
+			$(".photofocus").slide({ 
+				mainCell:".focusmallimg",
+				titCell:".focusmallimg li", 
+				prevCell:".photofocus_btnl",
+				nextCell:".photofocus_btnr",
+				effect:"left",
+				trigger:"click",
+				vis:4,
+				scroll:1});
+			$(".slideTxtBox").slide({trigger:"click"});
+			$(".photofocus .photofocus_btnl").css("width",(0.5*$(".photofocus .photofocus_btnl").height()));
+			$(".photofocus .photofocus_btnr").css("width",(0.5*$(".photofocus .photofocus_btnr").height()));
+		   	// hdkt_turn_to_page("public", sender, "", 0, urls[0]);
+		   	changeCourseFile(urls[page_no],ppt_name,page_no);
+		}
+
+		function onresize(){
+			if(pdfScale){
+				console.log("initScale-"+initScale);
+				 document.getElementById("pdfImg").height = $("#content").height()-17;
+				 document.getElementById("pdfImg").width = document.getElementById("pdfImg").height*initScale;
+				 document.getElementById("drawing").width = document.getElementById("pdfImg").width;
+				 document.getElementById("drawing").height = document.getElementById("pdfImg").height;
+				 pdfScale = document.getElementById("pdfImg").width/($("#content").width()-17);
+				 //重置画板信息
+				 renderAllPaths();
+				contentWidth = $('#content').width();
+				contentHeight = $('#content').height();
+			}
+		}
+	</script>
+  </body>
+</html>
