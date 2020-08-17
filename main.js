@@ -271,6 +271,13 @@ function init(){
   global.rmanager  = confData.rmanager;
   global.rtmp = confData.nginx.substr(0,confData.nginx.indexOf(':'))+'/mp4';
   global.hdType = confData.hdType;
+  
+ /* //从配置文件中读取是否记住密码 
+  global.isRemember = confData.isRemember;
+  //如果为是   读取用户名和密码(密文)
+  var userName = confData.userName;
+  var passWord = confData.passWord; */
+  
   var mcuIpAddress=confData.mcu;
   var rmanagerIpAddress=confData.rmanager;
 	getServerStatus(mcuIpAddress,rmanagerIpAddress);
@@ -278,8 +285,7 @@ function init(){
       initInnerHd(confData);
   }else{
     if(processParam == "" ){
-      var userName = confData.userName;
-      var passWord = confData.passWord;
+      
       var dynamic = confData.dynamic;
 	  
 	 
@@ -300,15 +306,37 @@ function init(){
     }/* else{
      
     } */
+	var mcu=global.mcu;
+	var rmanager=global.rmanager;
+	getServerStatus(mcu,rmanager);
   
 }
 
 
-function userLogin(){
+function listenServerStatus(){
+	var mcu=global.mcu;
+	var rmanager=global.rmanager;
+	getServerStatus(mcu,rmanager);
+}
+
+ipcMain.on('listenServerStatus',function(){
+	 loger.info("________________________start     listen  server status________________________________")
+	listenServerStatus();
+	 loger.info("________________________ing     listen  server status________________________________")
+	/* var inter=setInterval(function(){
+		loger.info("________________________setInterval  2000     listen  server status________________________________")
+			  if(!global.mcuServerStatus&&global.rmanagerServerStatus){
+				   openMsgWithMsgAndTime(undefined,"当前网络错误",2000);
+				    clearInterval(inter);
+			  }
+	},2000) */
+})
+
+function userLogin(param){
 	
-    var userName = confData.userName;
-      var passWord = confData.passWord;
+    var userName = param.userName;
       var dynamic = confData.dynamic;
+      var passWord = md5(param.passWord+dynamic);
 	  loger.info("________________________________________________________")
 	  loger.info(userName+"_________"+passWord);
 	if(userName&&passWord){
@@ -353,6 +381,7 @@ function userLogin(){
 	} */
 }
 
+
 function createUserLoginWindow(){
 	initWindow = new BrowserWindow({
 	  width: 500,
@@ -391,9 +420,7 @@ function createUserLoginWindow(){
 	    initWindow = null;
 	  }
 	}) 
-/* 	//不论 网络是否正常都打开login窗口
-		var webContents = initWindow.webContents;
-		webContents.send('serverStatus',serverStatus); */
+
 	
 }
 
@@ -405,7 +432,7 @@ function getServerStatus(mcuIpAddress,rmanagerIpAddress){
 		pingInternet(rmanagerIpAddress,function(res){
 			global.rmanagerServerStatus = res;
 		});
-		loger.info("_____"+global.isSuccessLogin);
+	 	loger.info("_____"+global.isSuccessLogin);
 		loger.info("___________________________________________________ panduan");
 		loger.info(global.isSuccessLogin&&(!global.mcuServerStatus||!global.rmanagerServerStatus));
 		loger.info(global.mcuServerStatus);
@@ -413,7 +440,7 @@ function getServerStatus(mcuIpAddress,rmanagerIpAddress){
 		loger.info(global.isSuccessLogin);
 		loger.info("___________________________________________________ panduan end");
 		
-		if(global.isSuccessLogin&&(!global.mcuServerStatus||!global.rmanagerServerStatus)){
+	/* /* 	if(global.isSuccessLogin&&(!global.mcuServerStatus||!global.rmanagerServerStatus)){
 			// 实例化不会进行通知
 			let notification = new Notification({
 			  // 通知的标题, 将在通知窗口的顶部显示
@@ -427,7 +454,7 @@ function getServerStatus(mcuIpAddress,rmanagerIpAddress){
 			  // 通知的超时持续时间 'default' or 'never'
 			  timeoutType: 'default',
 			})
-		}
+		} */
 		
 	},2000);
 }
@@ -1407,9 +1434,10 @@ ipcMain.on('saveConf', (event,param) => {
       data.port = param.port;
       data.nginx = param.nginx;
       data.mcu = param.mcu;
-      data.userName = param.userName;
       data.rmanager = param.rmanager;
-      data.passWord = md5(param.passWord+data.dynamic);
+	  data.isRemember=param.isRemember;  //是否记住密码
+      data.userName = param.userName;
+      data.passWord = param.passWord
     fs.writeFileSync(confPath, JSON.stringify(data, null, "   "))
 })
 
@@ -1433,8 +1461,8 @@ ipcMain.on('saveInnerCs', (event,param) => {
      innerCsWindow.close();
 })
 
-ipcMain.on('userLogin',function(event){
-  userLogin();
+ipcMain.on('userLogin',function(event,param){
+  userLogin(param);
 })
 
 ipcMain.on('initWin',function(event){
