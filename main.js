@@ -405,13 +405,13 @@ function getServerStatus(mcuIpAddress,rmanagerIpAddress){
 		pingInternet(rmanagerIpAddress,function(res){
 			global.rmanagerServerStatus = res;
 		});
-		loger.info("_____"+global.isSuccessLogin);
+		/* loger.info("_____"+global.isSuccessLogin);
 		loger.info("___________________________________________________ panduan");
 		loger.info(global.isSuccessLogin&&(!global.mcuServerStatus||!global.rmanagerServerStatus));
 		loger.info(global.mcuServerStatus);
 		loger.info(global.rmanagerServerStatus);
 		loger.info(global.isSuccessLogin);
-		loger.info("___________________________________________________ panduan end");
+		loger.info("___________________________________________________ panduan end"); */
 		
 		if(global.isSuccessLogin&&(!global.mcuServerStatus||!global.rmanagerServerStatus)){
 			// 实例化不会进行通知

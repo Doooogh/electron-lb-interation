@@ -10,7 +10,6 @@ function mySubmit(){
 		rmanager : $('#rmanager').val(),
 		userName : $('#userName').val(),
 		passWord : $('#passWord').val()
-		remeberPwd:$("input[id='remeberPwd']:checked")
 	}
 	window.Electron.saveConf(param);
 	// window.Electron.initWin();
