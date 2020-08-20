@@ -28,6 +28,13 @@ function mySubmit(){
 	}
 	
 	
+	
+	if(loginParam.userName==""||loginParam.passWord==""){
+		console.log(loginParam.userName&&loginParam.passWord);
+			$("#login-msg").text("账号或者密码不能为空！");
+			return false;
+	}
+	
 	//判断如果登陆成功后 才进行 写入配置文件
 	//获取全局变量中的 登陆成功 状态 isSuccessLogin
 	
@@ -44,7 +51,6 @@ function mySubmit(){
 		}
 	})
 	window.Electron.saveConf(param); 
-	window.Electron.startListenServerStatus(); 
 	
 	
 	

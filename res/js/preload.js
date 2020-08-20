@@ -238,7 +238,7 @@ window.Electron = {
    }
     
   },
-  checkServerStatus:function(callback){
+ checkServerStatus:function(callback){
 	  setInterval(function(){
 		  if(remote.getGlobal('mcuServerStatus') && remote.getGlobal('rmanagerServerStatus')){
 		  		  callback(true)
@@ -250,9 +250,7 @@ window.Electron = {
 	  
   },
   
-  startListenServerStatus:function(){
-	   ipcRenderer.send("listenServerStatus");
-  }
+ 
 }
 
 window.Electron.ipcRenderer.on('screenShotEx',function(event,filePath){

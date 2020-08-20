@@ -109,11 +109,6 @@ let WIN_MAX_STREAMS=16,MAX_STREAMS=100;
 
 
 
-//返回mcu 和rmanager的状态
-exports.getMcuAndRmanagerStatus = function(serverStatus)
-{
-	
-}
 
 exports.mainStreamindex = function(){
 	return mainStreamindex;

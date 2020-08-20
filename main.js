@@ -15,6 +15,12 @@ const md5 = require('md5-node')
 
 const ipcMain = electron.ipcMain
 const renderer = require('./renderer.js')
+//导入各模块js
+const cusMethod=require('./res/js/main-js/cus_method.js')
+const cusHttp=require('./res/js/main-js/cus-http.js')
+
+
+
 const config = require('./conf.js')
 const loger = require('./res/js/loger.js')
 const version = require('./versionInfo.json')
@@ -72,8 +78,181 @@ if (shouldQuit) {
 function createWindow (processParam) {
 
   loger.info("createWindow:"+processParam);
-
-  httpRetryCallback("http://"+global.host+":"+global.port+config.LESSON_INFO+"?lessonId="+getParam("lessonId",processParam)+"&tk="+getParam("token",processParam),(data)=>{
+  cusHttp.httpRetryCallback("http://"+global.host+":"+global.port+config.LESSON_INFO+"?lessonId="+getParam("lessonId",processParam)+"&tk="+getParam("token",processParam),(data)=>{
+	 global.roomId = data.data.course.courseId+getParam("lessonId",processParam);
+	     processParam += "&roomId="+roomId;
+	     global.lessonName = data.data.lessonName;
+	     var viewPath = "";
+	     global.lessonModel = data.data;
+	     global.coursesUserList = data.data.course.coursesUser;
+	     global.role = data.data.role;
+	     if(getParam("id",processParam) == data.data.course.teacherId || getParam("id",processParam) == data.data.course.rmanagerUserId){
+	         global.isSpeaker = true;
+	         global.lessonId = getParam("lessonId",processParam);
+	         global.teacherId = getParam("id",processParam);
+	         global.token = getParam("token",processParam);
+	         global.processParam = processParam;
+	         global.classroomSize = false;
+	         
+	         if(data.data.lessonType == 0){//多屏
+	            
+	             if(data.data.course.coursesUser.length > 5)
+	             {
+	               global.classroomSize = true;
+	             }
+	             
+	             mainWindow = new BrowserWindow(
+	             {
+	               title:data.data.lessonName,
+	               icon:path.join(__dirname,'./res/app.ico'),
+	               width: 1600, 
+	               height: 900,
+	               transparent: true,
+	               autoHideMenuBar:true,
+	               frame:false,
+	               useContentSize:false,
+	               alwaysOnTop:false,
+	               skipTaskbar:true,
+	               show:false,
+	               webPreferences: {
+	                 plugins: true,
+	                 preload: path.join(__dirname, 'res/js', 'preload.js')
+	               }
+	             })
+	 
+	             viewPath = 'res/html/choose.html';
+	             // viewPath='view_complex/html/assist.html';
+	             global.isComplex = true;
+	             mainWindow.center();
+	              // mainWindow.openDevTools();
+	         }else{
+	 
+	             viewPath = 'view/html/teacher.html';
+	         }
+	     }else{
+	         if(data.data.lessonType == 0){//多屏
+	           var conf = JSON.parse(fs.readFileSync(_confPath + "/conf.json").toString());
+	           var _path = "view_complex";
+	 
+	             viewPath = _path+'/html/student.html';
+	             global.isComplex = true;
+	              mainWindow = new BrowserWindow(
+	               {
+	                 title:data.data.lessonName,
+	                 icon:path.join(__dirname,'./res/app.ico'),
+	                 width: 1700, 
+	                 height: 900,
+	                 autoHideMenuBar:true,
+	                 frame:false,
+	                 minimizable:false,
+	                 maximizable:false,
+	                 show:true,
+	                 skipTaskbar:true,
+	                 webPreferences: {
+	                   plugins: true,
+	                   preload: path.join(__dirname, 'res/js', 'preload.js')
+	                 }
+	               })
+	         }else{
+	             viewPath = 'view/html/student.html';
+	         }
+	     }
+	 
+	     if(!mainWindow){
+	        mainWindow = new BrowserWindow(
+	         {
+	           title:data.data.lessonName,
+	           icon:path.join(__dirname,'./res/app.ico'),
+	           width: 1200, 
+	           height: 720,
+	           autoHideMenuBar:true,
+	           skipTaskbar:true,
+	           show:false,
+	           webPreferences: {
+	             plugins: true,
+	             preload: path.join(__dirname, 'res/js', 'preload.js')
+	           }
+	         })
+	     }
+	 
+	     //设置窗口不可以随便改变大小，但是可以全屏、最小化
+	     mainWindow.setResizable(false);
+	 
+	     mainWindow.loadURL(url.format({
+	       pathname: path.join(__dirname, viewPath),
+	       protocol: 'file:',
+	       slashes: true
+	     })+"?"+processParam)
+	     //mainWindow.openDevTools();
+	     mainWindow.on('ready-to-show', function () {
+	       mainWindow.show();
+	     });
+	 
+	     mainWindow.on('move', function() {
+	        loger.info('mainWindow:move:');
+	        renderer.moveChildWindows(mainWindow.getBounds(), g_videoWindowList);
+	     })
+	     mainWindow.on('resize',function(){
+	           console.log("-----------------resize---------------------");
+	           var webContents = mainWindow.webContents;
+	           webContents.send('resize', 'pong');
+	       })
+	 
+	     //mainWindow.openDevTools();
+	      global.mainBounds = mainWindow.getBounds();
+	     // Emitted when the window is closed.
+	     mainWindow.on('close',function(event){
+	       //关闭客户端要停止录制视频，停止上传视频文件
+	       
+	       if(!global.is_stop){
+	          event.preventDefault();
+	          mainWindow.send('stopLive');
+	          return;
+	       }
+	       
+	       if(global.isSpeaker){
+	         if(global.is_upload){
+	           event.preventDefault();
+	           var _result = {'is_upload':true,'isRec':false}
+	           mainWindow.send('closeWin',_result);
+	         }else if(global.isRec){
+	           event.preventDefault();
+	           var _result = {'is_upload':false,'isRec':true}
+	           mainWindow.send('closeWin',_result);
+	         }
+	       }
+	       renderer.removeAllWindow(mainWindow,g_videoWindowList);
+	       var allWins = BrowserWindow.getAllWindows();
+	       loger.info("allWins:"+allWins);
+	       for (var i = 0; i < allWins.length; i++) {
+	         loger.info(allWins[i]);
+	         if(allWins[i] != mainWindow){
+	           allWins[i].close();
+	         }
+	       }
+	       mainWindow.send('closePrintscreen');
+	       //app.quit();
+	     })
+	     mainWindow.on('closed', function () {
+	       mainWindow = null;
+	      
+	     })
+	 
+	     mainWindow.once('ready-to-show', () => {
+	       mainWindow.show()
+	     })
+	 
+	     initTrayIcon();
+	 
+	     if(isError){
+	       cusWin.createErrorWindow();
+		   createErrorWindow();
+	     }
+	     //createMsgWindow();
+	     global.filePath = renderer.initFilePath(mainWindow);
+	 }); 
+  }
+/*  httpRetryCallback("http://"+global.host+":"+global.port+config.LESSON_INFO+"?lessonId="+getParam("lessonId",processParam)+"&tk="+getParam("token",processParam),(data)=>{
       global.roomId = data.data.course.courseId+getParam("lessonId",processParam);
       processParam += "&roomId="+roomId;
       global.lessonName = data.data.lessonName;
@@ -245,7 +424,7 @@ function createWindow (processParam) {
       //createMsgWindow();
       global.filePath = renderer.initFilePath(mainWindow);
   });
-}
+ }*/
 
 function init(){
 	
@@ -280,7 +459,16 @@ function init(){
   
   var mcuIpAddress=confData.mcu;
   var rmanagerIpAddress=confData.rmanager;
-	getServerStatus(mcuIpAddress,rmanagerIpAddress);
+  console.log(cusMethod);
+  loger.info("_____________________________________");
+    cusMethod.getServerStatus(mcuIpAddress,rmanagerIpAddress,()=>{
+		if(!global.mcuServerStatus&&global.rmanagerServerStatus){
+			if(num%10==0){   //每过二十秒弹出一次
+				openMsgWithMsgAndTime(null,"系统网络错误",2000);
+			}
+			num++;
+		}
+	});
   if(confData.hdType == 'inner'){
       initInnerHd(confData);
   }else{
@@ -303,34 +491,14 @@ function init(){
 		
 	
 		
-    }/* else{
-     
-    } */
-	var mcu=global.mcu;
-	var rmanager=global.rmanager;
-	getServerStatus(mcu,rmanager);
+    }
+
   
 }
 
 
-function listenServerStatus(){
-	var mcu=global.mcu;
-	var rmanager=global.rmanager;
-	getServerStatus(mcu,rmanager);
-}
 
-ipcMain.on('listenServerStatus',function(){
-	 loger.info("________________________start     listen  server status________________________________")
-	listenServerStatus();
-	 loger.info("________________________ing     listen  server status________________________________")
-	/* var inter=setInterval(function(){
-		loger.info("________________________setInterval  2000     listen  server status________________________________")
-			  if(!global.mcuServerStatus&&global.rmanagerServerStatus){
-				   openMsgWithMsgAndTime(undefined,"当前网络错误",2000);
-				    clearInterval(inter);
-			  }
-	},2000) */
-})
+
 
 function userLogin(param){
 	
@@ -424,21 +592,36 @@ function createUserLoginWindow(){
 	
 }
 
+
+//1111111
 function getServerStatus(mcuIpAddress,rmanagerIpAddress){
+	let num=0;
 	setInterval(function(){
 		pingInternet(mcuIpAddress,function(res){
+			
 			global.mcuServerStatus = res;
+			
 		});
 		pingInternet(rmanagerIpAddress,function(res){
 			global.rmanagerServerStatus = res;
 		});
+		if(!global.mcuServerStatus&&global.rmanagerServerStatus){
+			
+			if(num%10==0){   //每过二十秒弹出一次
+				openMsgWithMsgAndTime(null,"系统网络错误",2000);
+			}
+			num++;
+		}
 		
 	},2000);
 }
 
+
+
 /**
  * @param {Object} ipAddress 判断该地址状态是否是可连接的
  */
+//111111111
 function pingInternet(ipAddress,callback){
 	var index=ipAddress.lastIndexOf(":");
 	var host=ipAddress.substring(0,index);
@@ -453,6 +636,8 @@ function pingInternet(ipAddress,callback){
 	})
 }
 
+
+//1111
 function createErrorWindow(){
   errorWindow = new BrowserWindow(
     {
@@ -1786,6 +1971,7 @@ function Version(curV,reqV){//  curV项目当前版本 ,reqV最新版本号
  }
 
 
+//1111111111111
 var err=0;
 function httpRetryCallback(_url,_callback){
     const req = http.get(_url,function(req){  
