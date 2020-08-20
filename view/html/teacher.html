@@ -215,7 +215,15 @@
 	<script>
 		var pdfPaths = [];
 		$(document).ready(function() {
-
+			window.Electron.checkServerStatus(function(res){
+				console.log("teacher html  dont connection net!!");
+				console.log("_______________________________________________________________________");
+				if(res){
+					ipcRenderer.send('openMsg','暂时没有网络',2000);
+				}
+				// console.log('----------checkServerStatus-----------------:'+res)
+			})
+			
 			$(".slideTxtBox").slide({trigger:"click"});
 			$(".photofocus .photofocus_btnl").css("width",(0.6*$(".photofocus .photofocus_btnl").height()));
 			$(".photofocus .photofocus_btnr").css("width",(0.6*$(".photofocus .photofocus_btnr").height()));

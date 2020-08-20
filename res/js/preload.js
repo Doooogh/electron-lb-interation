@@ -245,8 +245,13 @@ window.Electron = {
 		  }else{
 		  		  callback(false)
 		  }
-	  },1000)
+		
+	  },2000)
 	  
+  },
+  
+  startListenServerStatus:function(){
+	   ipcRenderer.send("listenServerStatus");
   }
 }
 

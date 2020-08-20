@@ -1439,6 +1439,7 @@ exports.createConf = function(callback)
 			"dynamic":"easyhao",
 			"userName":"",
 			"passWord":"",
+			"isRemember":false,
 			"pip":0,
    			"stuUp":0,
    			"plan":"a",//a 通用型  b 黑板方案 
