@@ -5,7 +5,7 @@ const loger = require('../loger.js')
 
 const {BrowserWindow}=require('electron');
 
-module.exports=win
+
 var win={
 	/**
 	 * 创建窗口
@@ -95,8 +95,12 @@ var win={
 	    errorWindow = null
 	  })
 	},
-	//创建自定义窗口
-	createWindow:()=>{
-		
+	closeWindow:(winObj)=>{
+		if(winObj){
+			winObj.close();
+		}
 	}
+	
 }
+
+module.exports=win

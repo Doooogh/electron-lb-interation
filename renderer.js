@@ -12,6 +12,11 @@ const http = require('http');
 const os = require('os');
 const urllib = require('url');
 const _confPath = os.homedir()+"/"+config.BASE_CONF_PATH;
+
+// -------------------------------归类
+//dll 
+const confLib=require('./res/js/main-js/conf-lib.js')
+
 global.is_upload= false;
 global.isSpeaker= false;
 global.lessonId;
@@ -26,13 +31,13 @@ global.res_index_list;
 global.canRec;
 let time_interval;
 
-let YXV_Conf = 'void' // `sqlite3` is an "opaque" type, so we don't know its layout
-  , YXV_ConfPtr = ref.refType(YXV_Conf)
+/* let YXV_Conf = 'void' // `sqlite3` is an "opaque" type, so we don't know its layout   1
+  , YXV_ConfPtr = ref.refType(YXV_Conf)  1
   , YXV_ConfPtrPtr = ref.refType(YXV_ConfPtr)
-  , stringPtr = ref.refType('string')
+  , stringPtr = ref.refType('string')  1
 
-let YXV_Conf_R = 'void' // `sqlite3` is an "opaque" type, so we don't know its layout
-  , YXV_ConfPtr_R = ref.refType(YXV_Conf_R)
+let YXV_Conf_R = 'void' // `sqlite3` is an "opaque" type, so we don't know its layout 1
+  , YXV_ConfPtr_R = ref.refType(YXV_Conf_R)  1
   , YXV_ConfPtrPtr_R = ref.refType(YXV_ConfPtr_R)
 
 var dllPath =  path.join('AVConfLib.dll')
@@ -80,8 +85,7 @@ var confLib = ffi.Library(dllPath, {
 	'YXV_ConfMakeWindowFullScreen':['int',['pointer']],
 	'YXV_ConfGetTaskBarInfo':['int',['pointer', 'pointer','pointer']],
 	'YXV_ConfWriteRegistry':['int',['string','string','string']]
-});
-
+}); 
 
 let confHandlePtr = ref.alloc(YXV_ConfPtrPtr)
 confLib.YXV_ConfInit(confHandlePtr)
@@ -89,6 +93,7 @@ let confHandle = confHandlePtr.deref()
 
 let confHandlePtr_R = ref.alloc(YXV_ConfPtrPtr_R)
 let confHandle_R;
+*/
 
 
 const streamArray = []; 
@@ -375,6 +380,8 @@ function avr_addWindow(mainWindow, l, t, w, h, windowId) {
     return newVW;
 }
 
+
+//11111111111
 exports.moveChildWindows = function(mainBounds, vwl)
 {
 	for (var i = 0; i < vwl.length; ++i)

@@ -18,6 +18,7 @@ const renderer = require('./renderer.js')
 //导入各模块js
 const cusMethod=require('./res/js/main-js/cus_method.js')
 const cusHttp=require('./res/js/main-js/cus-http.js')
+const cusWin=require('./res/js/main-js/open-window.js')
 
 
 
@@ -119,7 +120,8 @@ function createWindow (processParam) {
 	                 preload: path.join(__dirname, 'res/js', 'preload.js')
 	               }
 	             })
-	 
+				loger.info("______________________mainWindow_____________________");
+				loger.info(mainWindow);
 	             viewPath = 'res/html/choose.html';
 	             // viewPath='view_complex/html/assist.html';
 	             global.isComplex = true;
@@ -252,179 +254,6 @@ function createWindow (processParam) {
 	     global.filePath = renderer.initFilePath(mainWindow);
 	 }); 
   }
-/*  httpRetryCallback("http://"+global.host+":"+global.port+config.LESSON_INFO+"?lessonId="+getParam("lessonId",processParam)+"&tk="+getParam("token",processParam),(data)=>{
-      global.roomId = data.data.course.courseId+getParam("lessonId",processParam);
-      processParam += "&roomId="+roomId;
-      global.lessonName = data.data.lessonName;
-      var viewPath = "";
-      global.lessonModel = data.data;
-      global.coursesUserList = data.data.course.coursesUser;
-      global.role = data.data.role;
-      if(getParam("id",processParam) == data.data.course.teacherId || getParam("id",processParam) == data.data.course.rmanagerUserId){
-          global.isSpeaker = true;
-          global.lessonId = getParam("lessonId",processParam);
-          global.teacherId = getParam("id",processParam);
-          global.token = getParam("token",processParam);
-          global.processParam = processParam;
-          global.classroomSize = false;
-          
-          if(data.data.lessonType == 0){//多屏
-             
-              if(data.data.course.coursesUser.length > 5)
-              {
-                global.classroomSize = true;
-              }
-              
-              mainWindow = new BrowserWindow(
-              {
-                title:data.data.lessonName,
-                icon:path.join(__dirname,'./res/app.ico'),
-                width: 1600, 
-                height: 900,
-                transparent: true,
-                autoHideMenuBar:true,
-                frame:false,
-                useContentSize:false,
-                alwaysOnTop:false,
-                skipTaskbar:true,
-                show:false,
-                webPreferences: {
-                  plugins: true,
-                  preload: path.join(__dirname, 'res/js', 'preload.js')
-                }
-              })
-
-              viewPath = 'res/html/choose.html';
-              // viewPath='view_complex/html/assist.html';
-              global.isComplex = true;
-              mainWindow.center();
-               // mainWindow.openDevTools();
-          }else{
-
-              viewPath = 'view/html/teacher.html';
-          }
-      }else{
-          if(data.data.lessonType == 0){//多屏
-            var conf = JSON.parse(fs.readFileSync(_confPath + "/conf.json").toString());
-            var _path = "view_complex";
-
-              viewPath = _path+'/html/student.html';
-              global.isComplex = true;
-               mainWindow = new BrowserWindow(
-                {
-                  title:data.data.lessonName,
-                  icon:path.join(__dirname,'./res/app.ico'),
-                  width: 1700, 
-                  height: 900,
-                  autoHideMenuBar:true,
-                  frame:false,
-                  minimizable:false,
-                  maximizable:false,
-                  show:true,
-                  skipTaskbar:true,
-                  webPreferences: {
-                    plugins: true,
-                    preload: path.join(__dirname, 'res/js', 'preload.js')
-                  }
-                })
-          }else{
-              viewPath = 'view/html/student.html';
-          }
-      }
-
-      if(!mainWindow){
-         mainWindow = new BrowserWindow(
-          {
-            title:data.data.lessonName,
-            icon:path.join(__dirname,'./res/app.ico'),
-            width: 1200, 
-            height: 720,
-            autoHideMenuBar:true,
-            skipTaskbar:true,
-            show:false,
-            webPreferences: {
-              plugins: true,
-              preload: path.join(__dirname, 'res/js', 'preload.js')
-            }
-          })
-      }
-
-      //设置窗口不可以随便改变大小，但是可以全屏、最小化
-      mainWindow.setResizable(false);
-
-      mainWindow.loadURL(url.format({
-        pathname: path.join(__dirname, viewPath),
-        protocol: 'file:',
-        slashes: true
-      })+"?"+processParam)
-      //mainWindow.openDevTools();
-      mainWindow.on('ready-to-show', function () {
-        mainWindow.show();
-      });
-
-      mainWindow.on('move', function() {
-         loger.info('mainWindow:move:');
-         renderer.moveChildWindows(mainWindow.getBounds(), g_videoWindowList);
-      })
-      mainWindow.on('resize',function(){
-            console.log("-----------------resize---------------------");
-            var webContents = mainWindow.webContents;
-            webContents.send('resize', 'pong');
-        })
-
-      //mainWindow.openDevTools();
-       global.mainBounds = mainWindow.getBounds();
-      // Emitted when the window is closed.
-      mainWindow.on('close',function(event){
-        //关闭客户端要停止录制视频，停止上传视频文件
-        
-        if(!global.is_stop){
-           event.preventDefault();
-           mainWindow.send('stopLive');
-           return;
-        }
-        
-        if(global.isSpeaker){
-          if(global.is_upload){
-            event.preventDefault();
-            var _result = {'is_upload':true,'isRec':false}
-            mainWindow.send('closeWin',_result);
-          }else if(global.isRec){
-            event.preventDefault();
-            var _result = {'is_upload':false,'isRec':true}
-            mainWindow.send('closeWin',_result);
-          }
-        }
-        renderer.removeAllWindow(mainWindow,g_videoWindowList);
-        var allWins = BrowserWindow.getAllWindows();
-        loger.info("allWins:"+allWins);
-        for (var i = 0; i < allWins.length; i++) {
-          loger.info(allWins[i]);
-          if(allWins[i] != mainWindow){
-            allWins[i].close();
-          }
-        }
-        mainWindow.send('closePrintscreen');
-        //app.quit();
-      })
-      mainWindow.on('closed', function () {
-        mainWindow = null;
-       
-      })
-
-      mainWindow.once('ready-to-show', () => {
-        mainWindow.show()
-      })
-
-      initTrayIcon();
-
-      if(isError){
-        createErrorWindow();
-      }
-      //createMsgWindow();
-      global.filePath = renderer.initFilePath(mainWindow);
-  });
- }*/
 
 function init(){
 	
@@ -440,22 +269,20 @@ function init(){
       }
   }
 
-   confData = JSON.parse(fs.readFileSync(confPath).toString());
+  confData = JSON.parse(fs.readFileSync(confPath).toString());
   loger.info("init-processParam:"+processParam);  
   loger.info("init-confData:"+confData);
+ 
   global.host = confData.host;
   global.port = confData.port;
   global.nginx = confData.nginx;
   global.mcu = confData.mcu;
   global.rmanager  = confData.rmanager;
+  loger.info(confPath);
+  loger.info(confData);
   global.rtmp = confData.nginx.substr(0,confData.nginx.indexOf(':'))+'/mp4';
   global.hdType = confData.hdType;
   
- /* //从配置文件中读取是否记住密码 
-  global.isRemember = confData.isRemember;
-  //如果为是   读取用户名和密码(密文)
-  var userName = confData.userName;
-  var passWord = confData.passWord; */
   
   var mcuIpAddress=confData.mcu;
   var rmanagerIpAddress=confData.rmanager;
@@ -499,55 +326,6 @@ function init(){
 
 
 
-
-function userLogin(param){
-	
-    var userName = param.userName;
-      var dynamic = confData.dynamic;
-      var passWord = md5(param.passWord+dynamic);
-	  loger.info("________________________________________________________")
-	  loger.info(userName+"_________"+passWord);
-	if(userName&&passWord){
-		httpRetryCallback("http://"+confData.host+":"+confData.port+config.USER_LOGIN+"?username="+userName+"&password="+passWord+"&dynamic="+dynamic,(data)=>{
-			loger.info(userName+"_________"+passWord);
-			loger.info("login status++++++++++++++____________________________");
-			loger.info(data.rc);
-			   if(data.rc == 0){
-			      var token = data.token;
-			      var userId = data.userId;
-			      loger.info("http://"+confData.host+":"+confData.port+config.FIND_LESSON+"?token="+token)
-			       http.get("http://"+confData.host+":"+confData.port+config.FIND_LESSON+"?token="+token,function(req,res){  
-			            var json='';  
-			            req.on('data',function(child_data){  
-			                json+=child_data;  
-			            });  
-			            req.on('end',function(){  
-			              loger.info("init-findLesson:"+json);
-			              var child_data = JSON.parse(json);
-			                if(child_data.rc == 0){
-			                  if(child_data.hasOwnProperty('lesson')){
-			                    var lessonId = child_data.lesson.lessonId;
-			                    processParam = 'id='+userId+'&lessonId='+lessonId+'&token='+token;
-			                    createWindow(processParam);
-			                    if(initWindow!=null){
-			                      initWindow.close();
-			                    }
-								global.isSuccessLogin=true;
-			                  }else{
-			                    errorMsg = "no_course";
-			                    createErrorWindow()
-			                  }
-			                }
-			            }); 
-			       });
-			    }
-			  })
-		
-	}
-	/* if(!global.isSuccessLogin){
-		createUserLoginWindow();
-	} */
-}
 
 
 function createUserLoginWindow(){
@@ -594,7 +372,7 @@ function createUserLoginWindow(){
 
 
 //1111111
-function getServerStatus(mcuIpAddress,rmanagerIpAddress){
+/* function getServerStatus(mcuIpAddress,rmanagerIpAddress){
 	let num=0;
 	setInterval(function(){
 		pingInternet(mcuIpAddress,function(res){
@@ -614,7 +392,7 @@ function getServerStatus(mcuIpAddress,rmanagerIpAddress){
 		}
 		
 	},2000);
-}
+} */
 
 
 
@@ -622,7 +400,7 @@ function getServerStatus(mcuIpAddress,rmanagerIpAddress){
  * @param {Object} ipAddress 判断该地址状态是否是可连接的
  */
 //111111111
-function pingInternet(ipAddress,callback){
+/* function pingInternet(ipAddress,callback){
 	var index=ipAddress.lastIndexOf(":");
 	var host=ipAddress.substring(0,index);
 	var port=ipAddress.substring(index+1);
@@ -634,11 +412,11 @@ function pingInternet(ipAddress,callback){
 	  .catch(() =>  {
 		 callback(false);
 	})
-}
+} */
 
 
 //1111
-function createErrorWindow(){
+/* function createErrorWindow(){
   errorWindow = new BrowserWindow(
     {
       title:"ERROR",
@@ -670,7 +448,7 @@ function createErrorWindow(){
     }
     errorWindow = null
   })
-}
+} */
 
 function createSettingWindow(){
   var viewPath = "";
@@ -1346,18 +1124,6 @@ app.on('ready', function(event){
       },800)
   })
 })
-
-
-function getTaskBarInfo(win){
-  setInterval(function(){
-    var taskBarInfoResult = renderer.YXV_ConfGetTaskBarInfo();
-    var width = taskBarInfoResult.width;
-    var height = taskBarInfoResult.height;
-    var position = taskBarInfoResult.position;
-    win.webContents.send("taskBarInfo",width,height,position);
-  },500)
-}
-
 // Quit when all windows are closed.
 app.on('window-all-closed', function () {
   if (process.platform !== 'darwin') {
@@ -1372,20 +1138,19 @@ app.on('activate', function () {
   }
 })
 
-//监听登录时 验证mcu
-/* ipcMain.on('pingInternet',function(event,mcu,rmanager){
-	if(mcu&&rmanager){
-		var mcuStuatus=pingInternet(mcu);
-		var rmanagerStuatus=	pingInternet(rmanager);
-		if(mcuStuatus&&rmanagerStuatus){
-			
-		}
-	}
-	renderer.pingInternet(false);
-	
-	
-  // renderer.hookWindow(initSetWindow,g_videoWindowList,ltwhArrays,urls,snList,noVolList,windowId);
-}); */
+
+function getTaskBarInfo(win){
+  setInterval(function(){
+    var taskBarInfoResult = renderer.YXV_ConfGetTaskBarInfo();
+    var width = taskBarInfoResult.width;
+    var height = taskBarInfoResult.height;
+    var position = taskBarInfoResult.position;
+    win.webContents.send("taskBarInfo",width,height,position);
+  },500)
+}
+
+
+
 
 ipcMain.on('hookWindow',function(event,ltwhArrays,urls,snList,noVolList,windowId){
   renderer.hookWindow(mainWindow,g_videoWindowList,ltwhArrays,urls,snList,noVolList,windowId);
@@ -1623,9 +1388,6 @@ ipcMain.on('saveInnerCs', (event,param) => {
      innerCsWindow.close();
 })
 
-ipcMain.on('userLogin',function(event,param){
-  userLogin(param);
-})
 
 ipcMain.on('initWin',function(event){
   init();
@@ -1945,6 +1707,33 @@ ipcMain.on('openOrCloseCanvas',function(event,flag){
   toolsWindow.webContents.send("openOrCloseCanvas",flag);
 });
 
+
+// ————————————————————————————————————————————————————————————————————————————————————————
+//获取配置文件的数据
+ipcMain.on('getConfData',function(event){
+	
+	//initWindow 此时是登录窗口
+	if(initWindow){
+				loger.info("init-confData: confPath"+confPath);
+		let confData=JSON.parse(fs.readFileSync(confPath).toString());
+
+		loger.info("init-confData:22222222222222222222222222222");
+		loger.info(JSON.stringify(confData));
+		
+		initWindow.webContents.send('sendConfData',confData);
+	}
+});
+
+
+//根据 processParam 创建窗口
+ipcMain.on('createWindowByProcessParam',function(event,processParam){
+	createWindow(processParam);
+});
+//关闭窗口
+ipcMain.on('closeWinByWinObj',function(event,winObj){
+	cusWin.closeWindow(winObj);
+});
+
 function Version(curV,reqV){//  curV项目当前版本 ,reqV最新版本号
           var arr1=curV.split('.');
           var arr2=reqV.split('.');
@@ -1972,7 +1761,7 @@ function Version(curV,reqV){//  curV项目当前版本 ,reqV最新版本号
 
 
 //1111111111111
-var err=0;
+/* var err=0;
 function httpRetryCallback(_url,_callback){
     const req = http.get(_url,function(req){  
         var json='';  
@@ -2007,4 +1796,4 @@ function httpRetryCallback(_url,_callback){
             httpRetryCallback(_url,_callback);
           }
         }); 
-}
+} */

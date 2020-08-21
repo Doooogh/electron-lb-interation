@@ -60,9 +60,9 @@ window.Electron = {
   saveConf:function(param){
       ipcRenderer.send("saveConf",param);
   },
-  userLogin:function(param){
-      ipcRenderer.send("userLogin",param);
-  },
+/*  userLogin:function(winObj,param){
+      ipcRenderer.send("userLogin",winObj,param);
+  }, */
   saveInnerCs:function(param){
       ipcRenderer.send("saveInnerCs",param);
   },
