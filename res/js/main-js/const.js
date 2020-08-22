@@ -1,0 +1,15 @@
+const streamArray = []; 
+var url;
+let videoStr;
+let audioStr;
+let videoKey;
+let audioKey;
+let interval_int;
+let myAudioStreamindex;
+let mainStreamindex;
+let mainWinindex;
+let currentVideo;
+let currentAideo;
+let filePath;
+let windowSeq=0;
+let WIN_MAX_STREAMS=16,MAX_STREAMS=100;

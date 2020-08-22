@@ -1,19 +1,15 @@
 const {ipcMain} =  require('electron')
-
-function avr_findWindow(vwl, windowId) {
-	for (var i = 0; i < vwl.length; ++i)
-	{
-		var vwInfo = vwl[i];
-		if (vwInfo.windowId == windowId) /* window already exists, */
-		{
-			return vwInfo;
-		}
-	}
-
-	return null;
-}
+//dll 
+// const confLib=require('./res/js/main-js/conf-lib.js')
+const confLib=require('./conf-lib.js')
+const cusStream=require('./cus-operation-stream.js')
+let mainWinindex;
 
 var operationWin={
+	mainWinindex :()=>{
+		return mainWinindex;
+	}, 
+	
 	/**
 	 * 移动窗口位置 
 	 * @param {
@@ -109,7 +105,7 @@ var operationWin={
 			}
 		
 			var ltrbInfo = pipJson.ltrbInfo;
-			var vwNew = avr_findWindow(vwl, clickWindowId);
+			var vwNew = operationWin.avr_findWindow(vwl, clickWindowId);
 			if (vwNew != null)
 			{
 				loger.info("Hook window already exists!using-"+vwNew.using + "windowId"+clickWindowId);
@@ -119,7 +115,7 @@ var operationWin={
 				vwNew.windowId = clickWindowId;
 				var bounds = mainWindow.getBounds();
 		
-				var newBounds = avr_findRealBounds(mainWindow, ltrbInfo[0], ltrbInfo[1], ltrbInfo[2], ltrbInfo[3]);
+				var newBounds = operationWin.avr_findRealBounds(mainWindow, ltrbInfo[0], ltrbInfo[1], ltrbInfo[2], ltrbInfo[3]);
 				vwNew.wnd.setBounds(newBounds);
 				vwNew.wnd.show();
 				vwNew.using = true;
@@ -128,7 +124,7 @@ var operationWin={
 			else
 			{
 				loger.info("Create window, id=" + clickWindowId);
-				vwNew = avr_addWindow(mainWindow, ltrbInfo[0], ltrbInfo[1], ltrbInfo[2], ltrbInfo[3], clickWindowId);
+				vwNew = operationWin.avr_addWindow(mainWindow, ltrbInfo[0], ltrbInfo[1], ltrbInfo[2], ltrbInfo[3], clickWindowId);
 			}
 			//avr_removeWindow(vwl, windowId);
 		
@@ -140,7 +136,7 @@ var operationWin={
 		
 			var pips = pipJson.pips;
 			for (var i = 0; i < pips.length; i++) {
-				streamIndexArray[i+1] = avr_FindOrAddStream(urls[i+1]);
+				streamIndexArray[i+1] = operationWin.avr_FindOrAddStream(urls[i+1]);
 				vwNew.streamIndex[i+1] = streamIndexArray[1];
 		
 				var retWinIndex1 = new Buffer(4);
@@ -154,7 +150,7 @@ var operationWin={
 				++vwNew.refCount;
 			}
 			
-			streamIndexArray[0] = avr_FindOrAddStream(urls[0]);
+			streamIndexArray[0] = operationWin.avr_FindOrAddStream(urls[0]);
 			vwNew.streamIndex[0] = streamIndexArray[0];
 		
 			var retWinIndex1 = new Buffer(4);
@@ -169,6 +165,131 @@ var operationWin={
 		
 			var webContents = mainWindow.webContents;
 			webContents.send('onhook', snList, streamIndexArray, winIndexList);
-	}
+	},
+	avr_findWindow:(vwl, windowId)=> {
+		for (var i = 0; i < vwl.length; ++i)
+		{
+			var vwInfo = vwl[i];
+			if (vwInfo.windowId == windowId) /* window already exists, */
+			{
+				return vwInfo;
+			}
+		}
+
+		return null;
+	},
+	avr_findRealBounds:(mainWindow, l, t, w, h)=> {
+		var bounds = mainWindow.getBounds();
+	
+		var scale = global.externalDisplay.scaleFactor;
+		var newBounds = { "x":l + bounds.x*scale, "y": t + bounds.y*scale, "width": w, "height": h };
+	
+		let hwnd = mainWindow.getNativeWindowHandle() //获取窗口句柄。
+	
+		var isMax = mainWindow.isMaximized();
+		//if (!isMax)
+		//{
+		var retX = new Buffer(4), retY = new Buffer(4);
+		confLib.YXV_ConfFindTitleOffset(hwnd, retX, retY);
+	
+		var xOff = retX.readInt32LE(0), yOff = retY.readInt32LE(0);
+		newBounds.x -= xOff*scale;
+		newBounds.y -= yOff*scale;
+		if (isMax)
+		{
+			newBounds.x -= xOff*scale;
+			newBounds.y -= yOff*scale;		
+		}
+	
+		newBounds.x = parseInt(Math.round(newBounds.x));
+		newBounds.y = parseInt(Math.round(newBounds.y));
+		loger.info("avr_findRealBounds:" + JSON.stringify(newBounds)+ ',xOff='+xOff+',yOff='+yOff);
+		return newBounds;
+	},
+	avr_addWindow:(mainWindow, l, t, w, h, windowId)=> {
+		var newVW = {};
+		// var sdf = pipJson.ltrb.split(",");
+		var bounds = operationWin.avr_findRealBounds(mainWindow, l, t, w, h);
+	
+		var videoWindow = new BrowserWindow(
+	      {
+	        title:"childVideoWindow",
+	        focusable:false,
+	        frame:true,
+	        autoHideMenuBar:true,
+	        resizable:false,
+	        moveable:false, 
+	        closable:false,
+			minimizable:false,
+			maximizable:false,
+	        parent:mainWindow,
+	        modal:false,
+	        transparent:false, 
+	        backgroundColor:"#000000", 
+	        webPreferences: {
+	           plugins: true,
+	           preload: path.join(__dirname, 'res/js', 'preload.js'),
+	        }, 
+	        show:false
+	      });
+	
+		var url2 = urllib.format({
+	      pathname: path.join(__dirname, 'view_complex/html/video.html'),
+	      protocol: 'file:',
+	      slashes: true
+	    });
+		videoWindow.setBounds(bounds);
+		videoWindow.on('ready-to-show', function () {
+			videoWindow.show();
+		});
+	    videoWindow.loadURL(url2 + "?windowId=" + windowId);
+	    // videoWindow.openDevTools();
+	    newVW.wnd = videoWindow;
+	    newVW.parent = mainWindow;
+	    newVW.l = l;
+	    newVW.t = t;
+	    newVW.w = w;
+	    newVW.h = h;
+	
+	    newVW.streamIndex = Array();
+	    newVW.winIndex = Array();
+	
+	    for (var i = 0; i < WIN_MAX_STREAMS; ++i) {
+	    	newVW.streamIndex[i] = -1;
+	    	newVW.winIndex[i] = -1;
+	    }
+	    newVW.refCount = 1;
+	    newVW.windowId = windowId;
+	    newVW.using = true;
+	    newVW.isCanvas = false;
+	
+	    return newVW;
+	},
+	avr_removeWindow:(vwl, windowId, closeWindow) =>{
+		loger.info('avr_removeWindow:windowId-'+windowId);
+		for (var i = 0; i < vwl.length; ++i)
+		{
+			var vwInfo = vwl[i];
+			if (vwInfo.windowId == windowId) /* window already exists, */
+			{
+				loger.info('avr_removeWindow:index-'+i+',refCount:'+vwInfo.refCount);
+				--vwInfo.refCount;
+				if (vwInfo.refCount == 0)
+				{
+					operationWin.avr_removeWindowByIndex(vwl, i, closeWindow);
+				}
+
+				var streams_str = 'avr_streams:';
+				for (var x = 0; x < MAX_STREAMS; ++x)
+				{
+					if (g_streamArr[x] != null) streams_str += 'stream' + x + ":" + JSON.stringify(g_streamArr[x]);
+				}
+				loger.info(streams_str);
+				break;			
+			}
+		}
+}
+	
+
 }
 module.exports=operationWin;

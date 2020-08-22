@@ -15,7 +15,8 @@ const _confPath = os.homedir()+"/"+config.BASE_CONF_PATH;
 
 // -------------------------------归类
 //dll 
-const confLib=require('./res/js/main-js/conf-lib.js')
+// const confLib=require('./res/js/main-js/conf-lib.js')
+// const ref = require('ref')
 
 global.is_upload= false;
 global.isSpeaker= false;
@@ -29,15 +30,21 @@ global.isComplex = false;
 global.externalDisplay
 global.res_index_list;
 global.canRec;
+
+
+let global_pip_caller = null;
+var global_student_up = null; 
+
+
 let time_interval;
 
-/* let YXV_Conf = 'void' // `sqlite3` is an "opaque" type, so we don't know its layout   1
-  , YXV_ConfPtr = ref.refType(YXV_Conf)  1
+let YXV_Conf = 'void' // `sqlite3` is an "opaque" type, so we don't know its layout   1
+  , YXV_ConfPtr = ref.refType(YXV_Conf)  
   , YXV_ConfPtrPtr = ref.refType(YXV_ConfPtr)
-  , stringPtr = ref.refType('string')  1
+  , stringPtr = ref.refType('string')  
 
 let YXV_Conf_R = 'void' // `sqlite3` is an "opaque" type, so we don't know its layout 1
-  , YXV_ConfPtr_R = ref.refType(YXV_Conf_R)  1
+  , YXV_ConfPtr_R = ref.refType(YXV_Conf_R)  
   , YXV_ConfPtrPtr_R = ref.refType(YXV_ConfPtr_R)
 
 var dllPath =  path.join('AVConfLib.dll')
@@ -93,51 +100,43 @@ let confHandle = confHandlePtr.deref()
 
 let confHandlePtr_R = ref.alloc(YXV_ConfPtrPtr_R)
 let confHandle_R;
-*/
+
 
 
 const streamArray = []; 
 var url;
 let videoStr;
 let audioStr;
-let videoKey;
 let audioKey;
-let interval_int;
+let videoKey;
 let myAudioStreamindex;
+
+let interval_int;
+
 let mainStreamindex;
+
+
 let mainWinindex;
+
 let currentVideo;
 let currentAideo;
+
 let filePath;
+
 let windowSeq=0;
+
+var g_streamArr = new Array();
+
 let WIN_MAX_STREAMS=16,MAX_STREAMS=100;
 
 
 
-
-exports.mainStreamindex = function(){
-	return mainStreamindex;
-}
-exports.mainWinindex =function(){
-	return mainWinindex;
-} 
-
-exports.setCurrentVideo = function(_videoStr){
-	currentVideo = _videoStr;
+function readConf(param) {
+    var data = JSON.parse(fs.readFileSync(_confPath + "/conf.json").toString());
+    return data[param];
 }
 
-exports.setCurrentAideo = function(_aideoStr){
-	currentAideo = _aideoStr;
-}
-
-var g_streamArr = new Array();
-
-/* videoStream: struct
-  url -> streamURL
-  index -> streamIndex
-  refCount -> refCount
-  rIndex -> recorder index */
-
+//11111
 function avr_findIdleStreamIndex()
 {
 	for (var i = 0; i < MAX_STREAMS; ++i) {
@@ -148,7 +147,7 @@ function avr_findIdleStreamIndex()
 
 	return -1;
 }
-
+//1111
 function avr_reallyRemoveStream(streamIndex) {
 	var stream = g_streamArr[streamIndex];
 	if (stream != null && stream.refCount == 0 && stream.rIndex == -1) {
@@ -158,6 +157,7 @@ function avr_reallyRemoveStream(streamIndex) {
 	}
 }
 
+//111
 function avr_RemoveStreamAndWindow(streamIndex, winIndex) {
 	var stream = g_streamArr[streamIndex];
 
@@ -176,11 +176,8 @@ function avr_RemoveStreamAndWindow(streamIndex, winIndex) {
 	}
 }
 
-function readConf(param) {
-    var data = JSON.parse(fs.readFileSync(_confPath + "/conf.json").toString());
-    return data[param];
-}
 
+//1111
 function avr_FindOrAddStream(url) {
 	if (url == null) url = "";
 	for (var i = 0; i < MAX_STREAMS; ++i) {
@@ -223,6 +220,7 @@ function avr_FindOrAddStream(url) {
   refCount -> refCount;
  */
 
+//111
  function avr_removeWindowByIndex(vwl, index, exited) {
 	var vwInfo = vwl[index];
 	
@@ -253,6 +251,7 @@ function avr_FindOrAddStream(url) {
 	}
  }
 
+//1111
 function avr_removeWindow(vwl, windowId, closeWindow) {
 	loger.info('avr_removeWindow:windowId-'+windowId);
 	for (var i = 0; i < vwl.length; ++i)
@@ -278,6 +277,7 @@ function avr_removeWindow(vwl, windowId, closeWindow) {
 	}
 }
 
+//11111
 function avr_findWindow(vwl, windowId) {
 	for (var i = 0; i < vwl.length; ++i)
 	{
@@ -291,6 +291,7 @@ function avr_findWindow(vwl, windowId) {
 	return null;
 }
 
+//1111
 function avr_findRealBounds(mainWindow, l, t, w, h) {
 	var bounds = mainWindow.getBounds();
 
@@ -381,6 +382,294 @@ function avr_addWindow(mainWindow, l, t, w, h, windowId) {
 }
 
 
+function openStream(mainWindow,left,top,width,height){
+	var webContents = mainWindow.webContents;
+
+	var videoUris = getVideos();
+	var audioUris = getAudios();
+	
+	// console.log("audioUris----:"+audioUris);
+	if(videoUris.size == 0){
+		result = {
+			code:-1,
+			type:"stream",
+			msg:"请插入视频设备！"
+		};
+		webContents.send('video', result);
+		return ;
+	}
+
+	if(audioUris.length == 0){
+		result = {
+			code:-1,
+			type:"stream",
+			msg:"请插入音频设备！"
+		};
+		webContents.send('video', result);
+		return ;
+	}
+	
+	var result;
+	var retWinIndex3 = new Buffer(4);
+	let hwnd = mainWindow.getNativeWindowHandle() //获取窗口句柄。
+	
+	var streamindex = getStreamIndex();
+	if(currentVideo) {
+		videoKey = currentVideo;
+	} else {
+		videoUris.forEach(function (item, key, mapObj) {
+		    videoKey = key;
+		    return;
+		});
+	}
+	if(currentAideo){
+		audioKey = currentAideo;
+	}else{
+		audioUris.forEach(function (item, key, mapObj) {
+		    audioKey = key;
+		    return;
+		});
+	}
+	var x = confLib.YXV_ConfAddLocalStream(confHandle,streamindex, videoKey,audioKey,0,0);
+	console.log("---------x-------------------=="+x)
+	if(x != 0){
+		result = {
+			code:-1,
+			x:x,
+			type:"openStream",
+			msg:"打开摄像头失败"
+		};
+		webContents.send('video', result);
+		return ;
+	}
+	// console.log("left:"+left+"-top:"+top+"-left+width:"+(left+width)+"-top+height:"+(top+height));
+	confLib.YXV_ConfAddDisplay(confHandle, streamindex, 1,left,top,left+width,top+height, hwnd, retWinIndex3);
+	// console.log("--------open------------:" + retWinIndex3.readUInt32LE(0));
+	result = {
+		code:0,
+		type:"openStream",
+		msg:"打开摄像头成功",
+		streamindex:streamindex,
+		winindex:retWinIndex3.readUInt32LE(0)
+	};
+	webContents.send('video', result);
+	return streamindex;
+}
+
+function getVideos(){
+	console.log("-----------------------getVideos--------------------");
+	var retWinIndex1 = new Buffer(2000);
+	confLib.YXV_ConfGetDevNameListV(2000, retWinIndex1);
+	var v_resultStr = retWinIndex1.toString();
+	videoStr = v_resultStr;
+	var v_results = v_resultStr.split("|");
+	var videsMap =  new Map();
+	if(v_results.length > 0){
+		for(var i = 1;i<v_results.length-1;i=i+2){
+			videsMap.set(v_results[i],v_results[i+1]);
+		}
+	}
+	return videsMap;
+}
+
+function getAudios(){
+	var retWinIndex2 = new Buffer(2000);
+	confLib.YXV_ConfGetDevNameListA(2000, retWinIndex2);
+	// console.log("Buffer2 val:" + retWinIndex2.toString("utf8"));
+	var a_resultStr = retWinIndex2.toString();
+	audioStr = a_resultStr;
+	var a_results = a_resultStr.split("|");
+	var audiosMap =  new Map();
+	if(a_results.length > 1){
+		for(var i = 1;i<a_results.length-1;i=i+2){
+			audiosMap.set(a_results[i],a_results[i+1]);
+		}
+	}
+	return audiosMap;
+}
+
+function sendStream(mainWindow,streamindex,room_id){
+	var webContents = mainWindow.webContents;
+	var uuid =  UUID.v1();  
+	// console.log("uuid--------------------"+uuid+"--------random="+Math.floor(Math.random() * 999999));
+	if(!url){
+		url = config.RTMP_SERVER+room_id+"_"+uuid;
+	}
+	// console.log("url===="+url);
+	var l = confLib.YXV_ConfStartSend(confHandle,streamindex,url);
+	// console.log("--------------l--------------=="+l);
+	if(l != 0){
+		result = {
+			code:-1,
+			type:"sendStream",
+			msg:"视频推流失败"
+		};
+		webContents.send('video', result);
+	}else{
+		result = {
+			code:0,
+			type:"sendStream",
+			msg:"视频推流成功",
+			url:url,
+			streamindex:streamindex,
+		};
+		// console.log("result----------"+result.url);
+		webContents.send('video', result);
+	}
+	// console.log("l="+l+"----stmp:"+config.RTMP_SERVER+room_id+"_"+uuid);
+
+}
+
+
+//--------------------------------------------------
+function setFlagAndMil(win,flag,millisecond){
+	writeConffm(win,flag,millisecond);
+	var webContents = win.webContents;
+	webContents.send('onSetFlagAndMil', 'ok');
+}
+
+function writeConf(win,data) {
+    fs.writeFile(_confPath+ "/conf.json", JSON.stringify(data, null, "   "), function(err, data) {
+    	if(win !=null)
+    	{
+			var webContents = win.webContents;
+	    	var _result;
+	    	if(err){
+	    		_result ={
+	    			'status':'error',
+	    			'msg':err
+	    		}
+	    	}else{
+				_result ={
+	    			'status':'ok',
+	    			'msg':''
+	    		}
+	    	}
+			webContents.send('writeConf',_result);
+    	}
+    	
+    })
+}
+
+function writeConffm(win,flag,millisecond) {
+    var data = JSON.parse(fs.readFileSync(_confPath + "/conf.json").toString());
+    data['flag'] = parseInt(flag);
+    data['millisecond'] = parseInt(millisecond);
+    writeConf(win,data);
+}
+
+
+
+//------------------------------------------
+function initPips(ltwhArrays){
+	var scale = global.externalDisplay.scaleFactor;
+	loger.info("scale:"+scale);
+	var ltrb = '';
+	var pips = Array();
+	var ltrbInfo = Array();
+
+	if (ltwhArrays.length > WIN_MAX_STREAMS * 4)
+	{
+		ltwhArrays.splice(WIN_MAX_STREAMS * 4, ltwhArrays.length - WIN_MAX_STREAMS * 4);
+	}
+
+	for (var i = 0; i < ltwhArrays.length; i+=4) {
+		ltwhArrays[i+2] = Math.round(ltwhArrays[i+2]*scale);
+		ltwhArrays[i+3] = Math.round(ltwhArrays[i+3]*scale);
+		ltwhArrays[i] = Math.round(ltwhArrays[i]*scale);
+		ltwhArrays[i+1] = Math.round(ltwhArrays[i+1]*scale);
+	}
+
+	ltrbInfo[0] = ltwhArrays[0];
+	ltrbInfo[1] = ltwhArrays[1];
+	ltrbInfo[2] = ltwhArrays[2];
+	ltrbInfo[3] = ltwhArrays[3];
+	for (var i = 0; i < 4; ++i)
+	{
+		ltrbInfo[i] = parseInt(ltrbInfo[i]);
+	}
+
+	for (var i = 0; i < ltwhArrays.length; i+=4) {
+		var l = (ltwhArrays[i]);
+		var t = (ltwhArrays[i+1]);
+		if (i < 4) {
+			l -= ltrbInfo[0];
+			t -= ltrbInfo[1];
+		}
+		var r = ltwhArrays[i+2]+l;
+		var b = ltwhArrays[i+3]+t;
+		if(i == 0){
+			ltrb += l+','+t+','+r+','+b;
+		}else{
+			ltrb += '('+l+','+t+','+r+','+b+')';
+			pips.push(l+','+t+','+r+','+b);
+		}
+	}
+
+
+	var pipJson = {
+		ltrb : ltrb,
+		pips : pips, 
+		ltrbInfo : ltrbInfo
+	};
+	return pipJson;
+}
+
+function mkdirsSync(dirpath, mode) { 
+    try
+    {
+        if (!fs.existsSync(dirpath)) {
+            let pathtmp;
+            dirpath.split(/[/\\]/).forEach(function (dirname) {  //这里指用/ 或\ 都可以分隔目录  如  linux的/usr/local/services   和windows的 d:\temp\aaaa
+                if (pathtmp) {
+                    pathtmp = path.join(pathtmp, dirname);
+                }
+                else {
+                    pathtmp = dirname;
+                }
+                if (!fs.existsSync(pathtmp)) {
+                    if (!fs.mkdirSync(pathtmp, mode)) {
+                        return false;
+                    }
+                }
+            });
+        }
+        return true; 
+    }catch(e)
+    {
+		loger.info("create director fail! path=" + dirpath +" errorMsg:" + e);
+        return false;
+    }
+}
+
+
+
+// 11111
+exports.mainStreamindex = function(){
+	return mainStreamindex;
+}
+//11111
+exports.mainWinindex =function(){
+	return mainWinindex;
+} 
+//111
+exports.setCurrentVideo = function(_videoStr){
+	currentVideo = _videoStr;
+}
+//11111
+exports.setCurrentAideo = function(_aideoStr){
+	currentAideo = _aideoStr;
+}
+
+
+
+/* videoStream: struct
+  url -> streamURL
+  index -> streamIndex
+  refCount -> refCount
+  rIndex -> recorder index */
+
+
 //11111111111
 exports.moveChildWindows = function(mainBounds, vwl)
 {
@@ -397,7 +686,7 @@ exports.moveChildWindows = function(mainBounds, vwl)
 		}
 	}
 }
-
+//1111
 exports.hookWindow = function (mainWindow,vwl,ltwhArrays,urls,snList,noVolList,clickWindowId)
 {
 	if(!urls[0]) return;
@@ -504,7 +793,7 @@ exports.hookWindow = function (mainWindow,vwl,ltwhArrays,urls,snList,noVolList,c
 	// 	winIndexList.push(winindex_pip);
 	// }
 }
-
+//1111
 exports.moveWindow = function (mainWindow,vwl,ltwhArrays,streamindexList,winindexList,noVolList)
 {
 	var pipJson = initPips(ltwhArrays);
@@ -560,7 +849,7 @@ exports.moveWindow = function (mainWindow,vwl,ltwhArrays,streamindexList,wininde
 	var webContents = mainWindow.webContents;
 	webContents.send('moveWindow');
 }
-
+//1111
 exports.changeVolWindow = function (thisWindow,streamindexList,volList)
 {
 	loger.info('changeVolWindow:streamindexList='+streamindexList+':volList-'+volList);
@@ -571,7 +860,7 @@ exports.changeVolWindow = function (thisWindow,streamindexList,volList)
 	}
 }
 
-
+//1111
 exports.replaceStream = function (thisWindow,vwl,divList,streamindexList,winindexList,volList,newUrls)
 {
 	loger.info('replaceStream:init=divList-'+divList+';streamindex-'+streamindexList+':winIndex-'+winindexList+':volList-'+volList+':newUrls-'+newUrls);
@@ -740,143 +1029,6 @@ exports.getVideoStr = function (mainWindow,left,top,width,height,room_id)
 	sendStream(mainWindow,streamindex,room_id);
 }
 
-function openStream(mainWindow,left,top,width,height){
-	var webContents = mainWindow.webContents;
-
-	var videoUris = getVideos();
-	var audioUris = getAudios();
-	
-	// console.log("audioUris----:"+audioUris);
-	if(videoUris.size == 0){
-		result = {
-			code:-1,
-			type:"stream",
-			msg:"请插入视频设备！"
-		};
-		webContents.send('video', result);
-		return ;
-	}
-
-	if(audioUris.length == 0){
-		result = {
-			code:-1,
-			type:"stream",
-			msg:"请插入音频设备！"
-		};
-		webContents.send('video', result);
-		return ;
-	}
-	
-	var result;
-	var retWinIndex3 = new Buffer(4);
-	let hwnd = mainWindow.getNativeWindowHandle() //获取窗口句柄。
-	
-	var streamindex = getStreamIndex();
-	if(currentVideo) {
-		videoKey = currentVideo;
-	} else {
-		videoUris.forEach(function (item, key, mapObj) {
-		    videoKey = key;
-		    return;
-		});
-	}
-	if(currentAideo){
-		audioKey = currentAideo;
-	}else{
-		audioUris.forEach(function (item, key, mapObj) {
-		    audioKey = key;
-		    return;
-		});
-	}
-	var x = confLib.YXV_ConfAddLocalStream(confHandle,streamindex, videoKey,audioKey,0,0);
-	console.log("---------x-------------------=="+x)
-	if(x != 0){
-		result = {
-			code:-1,
-			x:x,
-			type:"openStream",
-			msg:"打开摄像头失败"
-		};
-		webContents.send('video', result);
-		return ;
-	}
-	// console.log("left:"+left+"-top:"+top+"-left+width:"+(left+width)+"-top+height:"+(top+height));
-	confLib.YXV_ConfAddDisplay(confHandle, streamindex, 1,left,top,left+width,top+height, hwnd, retWinIndex3);
-	// console.log("--------open------------:" + retWinIndex3.readUInt32LE(0));
-	result = {
-		code:0,
-		type:"openStream",
-		msg:"打开摄像头成功",
-		streamindex:streamindex,
-		winindex:retWinIndex3.readUInt32LE(0)
-	};
-	webContents.send('video', result);
-	return streamindex;
-}
-
-function getVideos(){
-	console.log("-----------------------getVideos--------------------");
-	var retWinIndex1 = new Buffer(2000);
-	confLib.YXV_ConfGetDevNameListV(2000, retWinIndex1);
-	var v_resultStr = retWinIndex1.toString();
-	videoStr = v_resultStr;
-	var v_results = v_resultStr.split("|");
-	var videsMap =  new Map();
-	if(v_results.length > 0){
-		for(var i = 1;i<v_results.length-1;i=i+2){
-			videsMap.set(v_results[i],v_results[i+1]);
-		}
-	}
-	return videsMap;
-}
-
-function getAudios(){
-	var retWinIndex2 = new Buffer(2000);
-	confLib.YXV_ConfGetDevNameListA(2000, retWinIndex2);
-	// console.log("Buffer2 val:" + retWinIndex2.toString("utf8"));
-	var a_resultStr = retWinIndex2.toString();
-	audioStr = a_resultStr;
-	var a_results = a_resultStr.split("|");
-	var audiosMap =  new Map();
-	if(a_results.length > 1){
-		for(var i = 1;i<a_results.length-1;i=i+2){
-			audiosMap.set(a_results[i],a_results[i+1]);
-		}
-	}
-	return audiosMap;
-}
-
-function sendStream(mainWindow,streamindex,room_id){
-	var webContents = mainWindow.webContents;
-	var uuid =  UUID.v1();  
-	// console.log("uuid--------------------"+uuid+"--------random="+Math.floor(Math.random() * 999999));
-	if(!url){
-		url = config.RTMP_SERVER+room_id+"_"+uuid;
-	}
-	// console.log("url===="+url);
-	var l = confLib.YXV_ConfStartSend(confHandle,streamindex,url);
-	// console.log("--------------l--------------=="+l);
-	if(l != 0){
-		result = {
-			code:-1,
-			type:"sendStream",
-			msg:"视频推流失败"
-		};
-		webContents.send('video', result);
-	}else{
-		result = {
-			code:0,
-			type:"sendStream",
-			msg:"视频推流成功",
-			url:url,
-			streamindex:streamindex,
-		};
-		// console.log("result----------"+result.url);
-		webContents.send('video', result);
-	}
-	// console.log("l="+l+"----stmp:"+config.RTMP_SERVER+room_id+"_"+uuid);
-
-}
 
 exports.getSetting = function(win){
 	var webContents = win.webContents;
@@ -1106,8 +1258,7 @@ exports.startRec =function(win,width,height,mianStrIndex){
 	global.isRec = true;
 }
 
-let global_pip_caller = null;
-var global_student_up = null; 
+
 exports.stopRec =function(win){
 	loger.info('stopRec');
 
@@ -1322,41 +1473,6 @@ exports.getFlagAndMil = function(win){
 	webContents.send('onGetFlagAndMil', readConf('flag'),readConf('millisecond'));
 }
 
-function setFlagAndMil(win,flag,millisecond){
-	writeConffm(win,flag,millisecond);
-	var webContents = win.webContents;
-	webContents.send('onSetFlagAndMil', 'ok');
-}
-
-function writeConf(win,data) {
-    fs.writeFile(_confPath+ "/conf.json", JSON.stringify(data, null, "   "), function(err, data) {
-    	if(win !=null)
-    	{
-			var webContents = win.webContents;
-	    	var _result;
-	    	if(err){
-	    		_result ={
-	    			'status':'error',
-	    			'msg':err
-	    		}
-	    	}else{
-				_result ={
-	    			'status':'ok',
-	    			'msg':''
-	    		}
-	    	}
-			webContents.send('writeConf',_result);
-    	}
-    	
-    })
-}
-
-function writeConffm(win,flag,millisecond) {
-    var data = JSON.parse(fs.readFileSync(_confPath + "/conf.json").toString());
-    data['flag'] = parseInt(flag);
-    data['millisecond'] = parseInt(millisecond);
-    writeConf(win,data);
-}
 
 exports.changeFilePath = function(win,_filePath){
 	var data = JSON.parse(fs.readFileSync(_confPath + "/conf.json").toString());
@@ -1471,86 +1587,6 @@ exports.createConf = function(callback)
 
 }
 
-function initPips(ltwhArrays){
-	var scale = global.externalDisplay.scaleFactor;
-	loger.info("scale:"+scale);
-	var ltrb = '';
-	var pips = Array();
-	var ltrbInfo = Array();
-
-	if (ltwhArrays.length > WIN_MAX_STREAMS * 4)
-	{
-		ltwhArrays.splice(WIN_MAX_STREAMS * 4, ltwhArrays.length - WIN_MAX_STREAMS * 4);
-	}
-
-	for (var i = 0; i < ltwhArrays.length; i+=4) {
-		ltwhArrays[i+2] = Math.round(ltwhArrays[i+2]*scale);
-		ltwhArrays[i+3] = Math.round(ltwhArrays[i+3]*scale);
-		ltwhArrays[i] = Math.round(ltwhArrays[i]*scale);
-		ltwhArrays[i+1] = Math.round(ltwhArrays[i+1]*scale);
-	}
-
-	ltrbInfo[0] = ltwhArrays[0];
-	ltrbInfo[1] = ltwhArrays[1];
-	ltrbInfo[2] = ltwhArrays[2];
-	ltrbInfo[3] = ltwhArrays[3];
-	for (var i = 0; i < 4; ++i)
-	{
-		ltrbInfo[i] = parseInt(ltrbInfo[i]);
-	}
-
-	for (var i = 0; i < ltwhArrays.length; i+=4) {
-		var l = (ltwhArrays[i]);
-		var t = (ltwhArrays[i+1]);
-		if (i < 4) {
-			l -= ltrbInfo[0];
-			t -= ltrbInfo[1];
-		}
-		var r = ltwhArrays[i+2]+l;
-		var b = ltwhArrays[i+3]+t;
-		if(i == 0){
-			ltrb += l+','+t+','+r+','+b;
-		}else{
-			ltrb += '('+l+','+t+','+r+','+b+')';
-			pips.push(l+','+t+','+r+','+b);
-		}
-	}
-
-
-	var pipJson = {
-		ltrb : ltrb,
-		pips : pips, 
-		ltrbInfo : ltrbInfo
-	};
-	return pipJson;
-}
-
-function mkdirsSync(dirpath, mode) { 
-    try
-    {
-        if (!fs.existsSync(dirpath)) {
-            let pathtmp;
-            dirpath.split(/[/\\]/).forEach(function (dirname) {  //这里指用/ 或\ 都可以分隔目录  如  linux的/usr/local/services   和windows的 d:\temp\aaaa
-                if (pathtmp) {
-                    pathtmp = path.join(pathtmp, dirname);
-                }
-                else {
-                    pathtmp = dirname;
-                }
-                if (!fs.existsSync(pathtmp)) {
-                    if (!fs.mkdirSync(pathtmp, mode)) {
-                        return false;
-                    }
-                }
-            });
-        }
-        return true; 
-    }catch(e)
-    {
-		loger.info("create director fail! path=" + dirpath +" errorMsg:" + e);
-        return false;
-    }
-}
 
 
 exports.screenShotEx = function (sendWin,win1,win2){
