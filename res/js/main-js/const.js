@@ -1,15 +1,17 @@
-const streamArray = []; 
-var url;
-let videoStr;
-let audioStr;
-let videoKey;
-let audioKey;
-let interval_int;
-let myAudioStreamindex;
-let mainStreamindex;
-let mainWinindex;
-let currentVideo;
-let currentAideo;
-let filePath;
-let windowSeq=0;
-let WIN_MAX_STREAMS=16,MAX_STREAMS=100;
+/**
+ * 常量
+ */
+/**
+ *常量
+ */
+const os = require('os');
+const config = require('./../../../conf.js')
+
+var cusConst={
+	//配置文件路径
+	_confPath:os.homedir()+"/"+config.BASE_CONF_PATH,
+	WIN_MAX_STREAMS: 16,
+	MAX_STREAMS :100,
+	
+}
+module.exports=cusConst;
