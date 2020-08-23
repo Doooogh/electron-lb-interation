@@ -1,7 +1,7 @@
 const path = require('path')
 const ffi = require('ffi')
 const paramType=require('./cus-lib-param-type.js')
-
+var dllPath =  path.join('AVConfLib.dll')
 var confLib = ffi.Library(dllPath, {
     'YXV_ConfFindTitleOffset': ['void', [ 'pointer', 'pointer', 'pointer' ] ],
     'YXV_ConfInit': ['int', [ paramType.YXV_ConfPtrPtr ]],
