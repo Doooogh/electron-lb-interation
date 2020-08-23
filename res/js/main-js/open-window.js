@@ -25,7 +25,7 @@ var win={
 	        alwaysOnTop:true,
 	        webPreferences: {
 	          plugins: true,
-	          preload: path.join(__dirname, 'res/js', 'preload.js')
+	          preload: path.join(__dirname, 'res/js', './../../../preload.js')
 	        }
 	      })
 	    //msgWindow.openDevTools();

@@ -1,7 +1,5 @@
 const ref = require('ref')
 
-
-
 let YXV_Conf = 'void' // `sqlite3` is an "opaque" type, so we don't know its layout   1
 , YXV_ConfPtr = ref.refType(YXV_Conf)  
 , YXV_ConfPtrPtr = ref.refType(YXV_ConfPtr)
@@ -13,7 +11,7 @@ let YXV_Conf_R = 'void' // `sqlite3` is an "opaque" type, so we don't know its l
 
 
 let confHandlePtr = ref.alloc(YXV_ConfPtrPtr)
-confLib.YXV_ConfInit(confHandlePtr)
+// confLib.YXV_ConfInit(confHandlePtr)
 let confHandle = confHandlePtr.deref()
 
 let confHandlePtr_R = ref.alloc(YXV_ConfPtrPtr_R)
@@ -29,7 +27,6 @@ var paramType={
 	YXV_ConfPtrPtr_R:YXV_ConfPtrPtr_R,
 	
 	confHandlePtr:confHandlePtr,
-	confLib:confLib,
 	confHandle:confHandle,
 	confHandlePtr_R:confHandlePtr_R,
 	confHandle_R:confHandle_R,

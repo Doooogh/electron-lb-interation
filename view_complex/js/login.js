@@ -65,7 +65,6 @@ function login(param){
 		cusHttp.httpRetryCallback("http://"+confData.host+":"+confData.port+config.USER_LOGIN+"?username="+userName+"&password="+passWord+"&dynamic="+dynamic,(data)=>{
 				loger.info(userName+"_________"+passWord);
 				loger.info("login status++++++++++++++____________________________");
-				loger.info(data.rc);
 				   if(data.rc == 0){
 				      var token = data.token;
 				      var userId = data.userId;
@@ -120,7 +119,6 @@ function userLogin(param){
 		httpRetryCallback("http://"+confData.host+":"+confData.port+config.USER_LOGIN+"?username="+userName+"&password="+passWord+"&dynamic="+dynamic,(data)=>{
 			loger.info(userName+"_________"+passWord);
 			loger.info("login status++++++++++++++____________________________");
-			loger.info(data.rc);
 			   if(data.rc == 0){
 			      var token = data.token;
 			      var userId = data.userId;
@@ -187,7 +185,6 @@ $(function(){
 		confData=resConfData;
 		if(confData){
 			loger.info("confData  init  login form value!!!!!!!!!!")
-			loger.info(confData);
 			var conf=confData;
 			//从配置文件读取是否 为记住密码
 			var isRemember=conf.isRemember;

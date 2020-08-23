@@ -22,12 +22,12 @@ var cusNet={
 		let num=0;
 		setInterval(function(){
 			cusNet.pingInternet(mcuIpAddress,function(res){
-				loger.info("mcuIp listen status result:"+res);
+				// loger.info("mcuIp listen status result:"+res);
 				global.mcuServerStatus = res;
 				
 			});
 			cusNet.pingInternet(rmanagerIpAddress,function(res){
-				loger.info("rmanagerIp listen status result:"+res);
+				// loger.info("rmanagerIp listen status result:"+res);
 				global.rmanagerServerStatus = res;
 			});
 			
