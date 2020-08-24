@@ -7,6 +7,7 @@ const confLibParam = require('./cus-lib-param-type')
 const loger = require('./../loger.js')
 
 const config=require('./const.js')
+const cusGlobalParam=require('./cus-opreation-global-param')
 
 let confHandle = confLibParam.confHandle;
 
@@ -181,7 +182,7 @@ var cusUtils = {
     //------------------------------strean--------------------------------
     avr_findIdleStreamIndex: () => {
         for (var i = 0; i < MAX_STREAMS; ++i) {
-            if (global.g_streamArr[i] == null) {
+            if (cusGlobalParam.g_streamArrGet(i) == null) {
                 return i;
             }
         }
@@ -189,15 +190,17 @@ var cusUtils = {
         return -1;
     },
     avr_reallyRemoveStream: (streamIndex) => {
-        var stream = global.g_streamArr[streamIndex];
+        var stream = cusGlobalParam.g_streamArrGet(streamIndex);
         if (stream != null && stream.refCount == 0 && stream.rIndex == -1) {
             confLib.YXV_ConfRemoveStream(confHandle, streamIndex);
             loger.info('avr_reallyRemoveStream:' + streamIndex);
-            global.g_streamArr[streamIndex] = null;
+            // global.g_streamArr[streamIndex] = null;
+            cusGlobalParam.g_streamArrSet(streamIndex,null);
         }
     },
     avr_RemoveStreamAndWindow:(streamIndex, winIndex)=> {
-        var stream = global.g_streamArr[streamIndex];
+        // var stream = global.g_streamArr[streamIndex];
+        var stream = cusGlobalParam.g_streamArrGet(streamIndex);
 
         if (stream != null)
         {
@@ -216,8 +219,8 @@ var cusUtils = {
     avr_FindOrAddStream:(url) =>{
         if (url == null) url = "";
         for (var i = 0; i < MAX_STREAMS; ++i) {
-            if (global.g_streamArr[i] != null && global.g_streamArr[i].url == url) {
-                ++global.g_streamArr[i].refCount;
+            if (cusGlobalParam.g_streamArrGet(i) != null && cusGlobalParam.g_streamArrGet(i).url == url) {
+                ++cusGlobalParam.g_streamArrGet(i).refCount;
                 loger.info('hookWindow:avr_FindOrAddStream ' + url + ' return existing-' + i);
                 return i;
             }
@@ -230,7 +233,8 @@ var cusUtils = {
         srInfo.refCount = 1;
         srInfo.rIndex = -1;
         srInfo.index = newIndex;
-        global.g_streamArr[newIndex] = srInfo;
+        // global.g_streamArr[newIndex] = srInfo;
+        cusGlobalParam.g_streamArrSet(newIndex,srInfo);
 
         var delayMS = cusUtils.readConf("millisecond");
         if (delayMS == null) delayMS = 200;
@@ -286,7 +290,8 @@ var cusUtils = {
                 var streams_str = 'avr_streams:';
                 for (var x = 0; x < MAX_STREAMS; ++x)
                 {
-                    if (global.g_streamArr[x] != null) streams_str += 'stream' + x + ":" + JSON.stringify(global.g_streamArr[x]);
+                    // if (global.g_streamArr[x] != null) streams_str += 'stream' + x + ":" + JSON.stringify(global.g_streamArr[x]);
+                    if (cusGlobalParam.g_streamArrGet(x) != null) streams_str += 'stream' + x + ":" + JSON.stringify(cusGlobalParam.g_streamArrGet(x));
                 }
                 loger.info(streams_str);
                 break;
@@ -541,6 +546,7 @@ var cusUtils = {
         cusUtils.writeConf(win,data);
     },
     initPips:(ltwhArrays)=>{
+        loger.info("initPips-------------------------:"+ltwhArrays);
         var scale = global.externalDisplay.scaleFactor;
         loger.info("scale:"+scale);
         var ltrb = '';

@@ -15,8 +15,8 @@ const _confPath = os.homedir()+"/"+config.BASE_CONF_PATH;
 
 // -------------------------------归类
 //dll 
-const confLib=require('./res/js/main-js/conf-lib.js')
-const confLibParam=require('./res/js/main-js/cus-lib-param-type.js')
+/*const confLib=require('./res/js/main-js/conf-lib.js')
+const confLibParam=require('./res/js/main-js/cus-lib-param-type.js')*/
 // const ref = require('ref')
 
 global.is_upload= false;
@@ -101,9 +101,9 @@ let confHandle = confHandlePtr.deref()
 
 let confHandlePtr_R = ref.alloc(YXV_ConfPtrPtr_R)
 let confHandle_R;
-confLib.YXV_ConfInit(confLibParam.confHandlePtr)
+confLib.YXV_ConfInit(confHandlePtr)
 
-
+var g_streamArr = new Array()  //更改为全局
 const streamArray = [];
 //改成global 变量
 var url;  //改名为streamUrl  全局的  1个方法

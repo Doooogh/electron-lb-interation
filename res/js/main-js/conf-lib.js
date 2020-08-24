@@ -1,7 +1,9 @@
 const path = require('path')
 const ffi = require('ffi')
+const loger = require('../loger.js')
 const paramType=require('./cus-lib-param-type.js')
-var dllPath =  path.join('AVConfLib.dll')
+var dllPath =  path.join('./../../../AVConfLib.dll')
+/*loger.info("dllPath:___"+dllPath)*/
 var confLib = ffi.Library(dllPath, {
     'YXV_ConfFindTitleOffset': ['void', [ 'pointer', 'pointer', 'pointer' ] ],
     'YXV_ConfInit': ['int', [ paramType.YXV_ConfPtrPtr ]],
@@ -47,4 +49,5 @@ var confLib = ffi.Library(dllPath, {
 	'YXV_ConfGetTaskBarInfo':['int',['pointer', 'pointer','pointer']],
 	'YXV_ConfWriteRegistry':['int',['string','string','string']]
 });
+confLib.YXV_ConfInit(paramType.confHandlePtr);
 module.exports=confLib;

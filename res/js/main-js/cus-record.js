@@ -8,7 +8,8 @@ const cusSystem=require('./cus-system.js');
 const cusStreamWin=require('./cus-operation-stream-and-win.js');
 const cusConst = require('./const.js');
 const cusUtils=require('./cus-utils.js')
-
+const cusGlobalParam=require('./cus-opreation-global-param')
+const loger = require('../loger.js')
 const path = require('path')
 
 var fs = require('fs')
@@ -82,13 +83,14 @@ var record={
 			confHandle_R = confLibParam.confHandlePtr_R.deref();
 	
 			for (var i = 0; i < MAX_STREAMS; i++) {
-				if (global.g_streamArr[i] != null) {
+				if (cusGlobalParam.g_streamArrGet(i) != null) {
 					var addStream_result = confLib.YXV_ConfRAddStream(confHandle_R,i,retWinIndex1);
 					loger.info('startRec:YXV_ConfRAddStream=streamindex-'+i+':result-'+addStream_result);
 					var winindex = retWinIndex1.readUInt32LE(0);
 					res_index_list.push(i+"_"+winindex);
 					if(addStream_result != 0 ) is_ok = false;
-					global.g_streamArr[i].rIndex = winindex;
+					// global.g_streamArr[i].rIndex = winindex;
+					cusGlobalParam.g_streamArrGet(i).rIndex = winindex;
 				}
 			}
 			confLib.YXV_ConfRSwitchMain(confHandle_R,mianStrIndex);
@@ -132,11 +134,11 @@ var record={
 		loger.info('stopRec:YXV_ConfRClose=confHandle_R-'+confHandle_R+':result-'+rCloseResult);
 	
 		for (var i = 0; i < MAX_STREAMS; i++) {
-			if (global.g_streamArr[i] != null) {
-				if (global.g_streamArr[i].refCount == 0) {
+			if (cusGlobalParam.g_streamArrGet(i)!= null) {
+				if (cusGlobalParam.g_streamArrGet(i).refCount == 0) {
 					cusStreamWin.avr_reallyRemoveStream(i);
 				} else {
-					global.g_streamArr[i].rIndex = -1;				
+					cusGlobalParam.g_streamArrSet(i,-1);
 				}
 			}
 		}

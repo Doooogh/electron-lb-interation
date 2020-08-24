@@ -218,8 +218,8 @@ function createWindow (processParam) {
 	 
 	     mainWindow.on('move', function() {
 	        loger.info('mainWindow:move:');
-	        // renderer.moveChildWindows(mainWindow.getBounds(), g_videoWindowList);
-	        cusStreamWin.moveChildWindows(mainWindow.getBounds(), g_videoWindowList);
+	        renderer.moveChildWindows(mainWindow.getBounds(), g_videoWindowList);
+	        // cusStreamWin.moveChildWindows(mainWindow.getBounds(), g_videoWindowList);
 	     })
 	     mainWindow.on('resize',function(){
 	           console.log("-----------------resize---------------------");
@@ -250,8 +250,8 @@ function createWindow (processParam) {
 	           mainWindow.send('closeWin',_result);
 	         }
 	       }
-	       // renderer.removeAllWindow(mainWindow,g_videoWindowList);
 	       cusStreamWin.removeAllWindow(mainWindow,g_videoWindowList);
+	       // cusStreamWin.removeAllWindow(mainWindow,g_videoWindowList);
 	       var allWins = BrowserWindow.getAllWindows();
 	       loger.info("allWins:"+allWins);
 	       for (var i = 0; i < allWins.length; i++) {
@@ -284,7 +284,7 @@ function createWindow (processParam) {
   }
 
 function init(){
-	
+
 //设置当前登录状态为false
  global.isSuccessLogin=false;					
   loger.info("init");  
@@ -304,8 +304,7 @@ function init(){
   global.nginx = confData.nginx;
   global.mcu = confData.mcu;
   global.rmanager  = confData.rmanager;
-  loger.info(confPath);
-  loger.info(confData);
+
   global.rtmp = confData.nginx.substr(0,confData.nginx.indexOf(':'))+'/mp4';
   global.hdType = confData.hdType;
   

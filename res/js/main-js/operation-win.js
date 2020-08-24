@@ -3,6 +3,7 @@ const {ipcMain} =  require('electron')
 // const confLib=require('./res/js/main-js/conf-lib.js')
 const confLib=require('./conf-lib.js')
 const cusStream=require('./cus-operation-stream.js')
+const cusGlobalParam=require('./cus-opreation-global-param')
 let mainWinindex;
 
 var operationWin={
@@ -282,7 +283,8 @@ var operationWin={
 				var streams_str = 'avr_streams:';
 				for (var x = 0; x < MAX_STREAMS; ++x)
 				{
-					if (g_streamArr[x] != null) streams_str += 'stream' + x + ":" + JSON.stringify(g_streamArr[x]);
+					// if (g_streamArr[x] != null) streams_str += 'stream' + x + ":" + JSON.stringify(g_streamArr[x]);
+					if (cusGlobalParam.g_streamArrGet(x)!= null) streams_str += 'stream' + x + ":" + JSON.stringify(cusGlobalParam.g_streamArrGet(x));
 				}
 				loger.info(streams_str);
 				break;			

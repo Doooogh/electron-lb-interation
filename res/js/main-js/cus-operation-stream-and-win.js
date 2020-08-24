@@ -6,11 +6,14 @@ const cusUtils=require('./cus-utils.js')
 const {BrowserWindow}=require('electron')
 const path = require('path')
 const urllib = require('url');
+const cusGlobalParam=require('./cus-opreation-global-param')
 //常量
 const WIN_MAX_STREAMS=cusConst.WIN_MAX_STREAMS,
 	  MAX_STREAMS=cusConst.MAX_STREAMS;
-
+const confHandle=libParamType.confHandle;
 var url;
+
+
 
 
 var cusStreamWin={
@@ -34,35 +37,47 @@ var cusStreamWin={
 	},
 
 	avr_FindOrAddStream:(url)=> {
+		loger.info("global g_streamArr-----------------"+global.g_streamArr);
+
 		if (url == null) url = "";
 		for (var i = 0; i < MAX_STREAMS; ++i) {
-			if (global.g_streamArr[i] != null && global.g_streamArr[i].url == url) {
-				++global.g_streamArr[i].refCount;
+			if (cusGlobalParam.g_streamArrGet(i) != null && cusGlobalParam.g_streamArrGet(i).url == url) {
+				++cusGlobalParam.g_streamArrGet(i).refCount;
 				loger.info('hookWindow:avr_FindOrAddStream ' + url + ' return existing-' + i);
 				return i;
 			}
 		}
-	
+
+
 		var newIndex = cusStreamWin.avr_findIdleStreamIndex();
 		loger.info("global.g_streamArr newIndex"+newIndex);
 		var srInfo = {};
 		srInfo.url = url;
 		srInfo.refCount = 1;
 		srInfo.rIndex = -1;
-		srInfo.index = newIndex; 
-		global.g_streamArr[newIndex] = srInfo;
-	
-	    var delayMS = cusUtils.readConf("millisecond");
-	    if (delayMS == null) delayMS = 200;
+		srInfo.index = newIndex;
+		cusGlobalParam.g_streamArrSet(newIndex,srInfo);
+
+		  var delayMS = cusUtils.readConf("millisecond");
+
+		  loger.info("cusGlobalParam.g_streamArrGet()-----------------------------------");
+		  loger.info(cusGlobalParam.g_streamArrGet());
+	loger.info(confLib);
+	 if (delayMS == null) delayMS = 200;
+		loger.info("confLib.YXV_ConfAddStream  start-----------------------------------");
+		loger.info(libParamType.confHandle);
+		loger.info( srInfo.index);
+		loger.info(url);
+		loger.info(delayMS);
+		loger.info("confLib.YXV_ConfAddStream   end-----------------------------------");
 		var addStreamResult = confLib.YXV_ConfAddStream(libParamType.confHandle, srInfo.index, url, delayMS);
-		loger.info('hookWindow:YXV_ConfAddStream=streamindex-'+srInfo.index+':result-'+addStreamResult+':url-'+url+':delay-'+delayMS);
-	
-		return srInfo.index;
+       loger.info('hookWindow:YXV_ConfAddStream=streamindex-'+srInfo.index+':result-'+addStreamResult+':url-'+url+':delay-'+delayMS);
+       return srInfo.index;
 	},
 	
 	avr_findIdleStreamIndex:()=>{
 		for (var i = 0; i < MAX_STREAMS; ++i) {
-			if (global.g_streamArr[i] == null) {
+			if (cusGlobalParam.g_streamArrGet(i) == null) {
 				return i;
 			}
 		}
@@ -70,16 +85,17 @@ var cusStreamWin={
 		return -1;
 	},
 	avr_reallyRemoveStream:(streamIndex)=> {
-		var stream = global.g_streamArr[streamIndex];
+		var stream = cusGlobalParam.g_streamArrGet(streamIndex);
 		if (stream != null && stream.refCount == 0 && stream.rIndex == -1) {
 			confLib.YXV_ConfRemoveStream(confHandle, streamIndex);
 			loger.info('avr_reallyRemoveStream:' + streamIndex);
-			global.g_streamArr[streamIndex] = null;
+			cusGlobalParam.g_streamArrSet(streamIndex,null);
 		}
 	},
 	avr_RemoveStreamAndWindow:(streamIndex, winIndex)=> {
-		var stream = global.g_streamArr[streamIndex];
-	
+		// var stream = global.g_streamArr[streamIndex];
+		var stream = cusGlobalParam.g_streamArrGet(streamIndex);
+
 		if (stream != null)
 		{
 			confLib.YXV_ConfRemoveDisplay(confHandle, streamIndex, winIndex);
@@ -99,9 +115,9 @@ var cusStreamWin={
 		loger.info('replaceStream:init=divList-'+divList+';streamindex-'+streamindexList+':winIndex-'+winindexList+':volList-'+volList+':newUrls-'+newUrls);
 		
 		for (var i = 0; i < MAX_STREAMS; ++i) {
-			if (global.g_streamArr[i] != null) {
+			if (cusGlobalParam.g_streamArrGet(i) != null) {
 				var setStramVolResult = confLib.YXV_ConfSetStreamVol(confHandle,i,0);
-				loger.info('replaceStream-MAX_STREAMS:setStramVolResult=streamindex-'+global.g_streamArr[i]+':vol-0:result-'+setStramVolResult);
+				loger.info('replaceStream-MAX_STREAMS:setStramVolResult=streamindex-'+cusGlobalParam.g_streamArrGet(i)+':vol-0:result-'+setStramVolResult);
 			}
 		}
 	
@@ -214,7 +230,7 @@ var cusStreamWin={
 				var streams_str = 'avr_streams:';
 				for (var x = 0; x < MAX_STREAMS; ++x)
 				{
-					if (global.g_streamArr[x] != null) streams_str += 'stream' + x + ":" + JSON.stringify(global.g_streamArr[x]);
+					if (cusGlobalParam.g_streamArrGet(x) != null) streams_str += 'stream' + x + ":" + JSON.stringify(cusGlobalParam.g_streamArrGet(x));
 				}
 				loger.info(streams_str);
 				break;			
@@ -328,7 +344,7 @@ var cusStreamWin={
 		if (winArr.length < 2) return;
 
 		var windowId = winArr[0], winSeq = parseInt(winArr[1]);
-		avr_removeWindow(vwl, windowId, closeWindow);
+		cusStreamWin.avr_removeWindow(vwl, windowId, closeWindow);
 
 		var webContents = mainWindow.webContents;
 		webContents.send('removehook', sn, streamindex);
@@ -345,10 +361,22 @@ var cusStreamWin={
 		mainWindow.webContents.send('removehooks', null,null);
 	},
 
+	/**
+	 *
+	 * @param mainWindow
+	 * @param vwl
+	 * @param ltwhArrays 长宽高位置
+	 * @param urls 视频流地址
+	 * @param snList
+	 * @param noVolList
+	 * @param clickWindowId
+	 */
 	hookWindow:(mainWindow,vwl,ltwhArrays,urls,snList,noVolList,clickWindowId)=>{
+		loger.info("url[0]------------------------")
+		loger.info(url)
 		if(!urls[0]) return;
 	   	loger.info('hookWindow:ltwhArrays='+ltwhArrays+';urls='+urls+';snList='+snList+';noVolList='+noVolList + ";windowId"+clickWindowId);
-		var pipJson = cusUtils.initPips(ltwhArrays);
+	   	var pipJson = cusUtils.initPips(ltwhArrays);
 		loger.info("hookWindow:pipJson="+JSON.stringify(pipJson));
 	
 		var streamIndexArray = new Array();
@@ -359,7 +387,11 @@ var cusStreamWin={
 		}
 	
 		var ltrbInfo = pipJson.ltrbInfo;
+		loger.info("vwl----------------------------");
+		loger.info(vwl);
 		var vwNew = cusStreamWin.avr_findWindow(vwl, clickWindowId);
+		loger.info("vwNew");
+		loger.info(vwNew);
 		if (vwNew != null)
 		{
 			loger.info("Hook window already exists!using-"+vwNew.using + "windowId"+clickWindowId);
@@ -368,7 +400,8 @@ var cusStreamWin={
 			}
 			vwNew.windowId = clickWindowId;
 			var bounds = mainWindow.getBounds();
-	
+			loger.info("ltrbInfo------------------------")
+			loger.info(ltrbInfo);
 			var newBounds = cusStreamWin.avr_findRealBounds(mainWindow, ltrbInfo[0], ltrbInfo[1], ltrbInfo[2], ltrbInfo[3]);
 			vwNew.wnd.setBounds(newBounds);
 			vwNew.wnd.show();
@@ -387,38 +420,46 @@ var cusStreamWin={
 	    vwl[vwl.length] = vwNew;
 	
 		let hwnd = vwNew.wnd.getNativeWindowHandle() //获取窗口句柄。
-	
-		var pips = pipJson.pips;
+
+		 var pips = pipJson.pips;
 		for (var i = 0; i < pips.length; i++) {
+			loger.info("hookWindow ------------for for for0-------------------------url[0]");
 			streamIndexArray[i+1] = cusStreamWin.avr_FindOrAddStream(urls[i+1]);
 			vwNew.streamIndex[i+1] = streamIndexArray[1];
-	
-			var retWinIndex1 = new Buffer(4);
+
+			 var retWinIndex1 = new Buffer(4);
+			loger.info("hookWindow ------------for for for1-------------------------url[0]");
 			var pip_result = confLib.YXV_ConfAddDisplay2(confHandle, vwNew.streamIndex[i+1], 0, pipJson.pips[i], hwnd, retWinIndex1);
-		 	loger.info('hookWindow:pip_result=streamindex-'+vwNew.streamIndex[i+1]+':ltrb-'+pipJson.pips[i]+':hwnd-'+hwnd+':result-'+pip_result);
-			vwNew.winIndex[i+1] = retWinIndex1.readUInt32LE(0);
-			winIndexList[i + 1] = "" + clickWindowId + "|" + vwNew.winIndex[i+1];
-	
-			var vol = noVolList ? (noVolList[i+1] ? noVolList[i+1] : 0) : 0;
-			confLib.YXV_ConfSetStreamVol(confHandle, vwNew.streamIndex[i+1], vol);
-			++vwNew.refCount;
+				loger.info('hookWindow:pip_result=streamindex-'+vwNew.streamIndex[i+1]+':ltrb-'+pipJson.pips[i]+':hwnd-'+hwnd+':result-'+pip_result);
+                vwNew.winIndex[i+1] = retWinIndex1.readUInt32LE(0);
+                winIndexList[i + 1] = "" + clickWindowId + "|" + vwNew.winIndex[i+1];
+
+                var vol = noVolList ? (noVolList[i+1] ? noVolList[i+1] : 0) : 0;
+			loger.info("hookWindow ------------for for for2-------------------------url[0]");
+                confLib.YXV_ConfSetStreamVol(confHandle, vwNew.streamIndex[i+1], vol);
+                ++vwNew.refCount;
+			loger.info("hookWindow ------------for for for3-----end--------------------url[0]");
 		}
-		
+
+		loger.info("hookWindow -------------------------------------url[0]");
+		loger.info(urls[0]);
+
 		streamIndexArray[0] = cusStreamWin.avr_FindOrAddStream(urls[0]);
 		vwNew.streamIndex[0] = streamIndexArray[0];
-	
-		var retWinIndex1 = new Buffer(4);
-		var addDisplay2Result = confLib.YXV_ConfAddDisplay2(confHandle, vwNew.streamIndex[0], 0, pipJson.ltrb, hwnd, retWinIndex1);
-		loger.info('hookWindow:YXV_ConfAddDisplay2=streamindex-'+vwNew.streamIndex[0]+':ltrb-'+pipJson.ltrb+':hwnd-'+hwnd+':result-'+addDisplay2Result);
-		
-		vwNew.winIndex[0] = retWinIndex1.readUInt32LE(0);
-		winIndexList[0] = "" + clickWindowId + "|" + vwNew.winIndex[0];
-	
-		var vol = noVolList? noVolList[0] ? noVolList[0] : 0 : 0;
-		confLib.YXV_ConfSetStreamVol(confHandle, vwNew.streamIndex[0], vol);
-	
-		var webContents = mainWindow.webContents;
-		webContents.send('onhook', snList, streamIndexArray, winIndexList);
+
+            var retWinIndex1 = new Buffer(4);
+    var addDisplay2Result = confLib.YXV_ConfAddDisplay2(confHandle, vwNew.streamIndex[0], 0, pipJson.ltrb, hwnd, retWinIndex1);
+    loger.info('hookWindow:YXV_ConfAddDisplay2=streamindex-'+vwNew.streamIndex[0]+':ltrb-'+pipJson.ltrb+':hwnd-'+hwnd+':result-'+addDisplay2Result);
+
+    vwNew.winIndex[0] = retWinIndex1.readUInt32LE(0);
+    winIndexList[0] = "" + clickWindowId + "|" + vwNew.winIndex[0];
+
+    var vol = noVolList? noVolList[0] ? noVolList[0] : 0 : 0;
+    confLib.YXV_ConfSetStreamVol(confHandle, vwNew.streamIndex[0], vol);
+
+    var webContents = mainWindow.webContents;
+    webContents.send('onhook', snList, streamIndexArray, winIndexList);
+
 		//loger.info('hookWindow:YXV_ConfSetStreamVol='+streamindexList[i]+':vol-'+vol+':result-'+setStramVolResult);
 	
 	
@@ -511,7 +552,61 @@ var cusStreamWin={
 			var setStramVolResult = confLib.YXV_ConfSetStreamVol(confHandle,streamindexList[i],volList[i]);
 			loger.info('changeVolWindow-setStramVolResult=streamindex-'+streamindexList[i]+':vol:result-'+setStramVolResult);
 		}
-	}
+	},
+	initPips:(ltwhArrays)=>{
+		loger.info("initPips-------------------------:"+ltwhArrays);
+		var scale = global.externalDisplay.scaleFactor;
+		loger.info("scale:"+scale);
+		var ltrb = '';
+		var pips = Array();
+		var ltrbInfo = Array();
+
+		if (ltwhArrays.length > WIN_MAX_STREAMS * 4)
+		{
+			ltwhArrays.splice(WIN_MAX_STREAMS * 4, ltwhArrays.length - WIN_MAX_STREAMS * 4);
+		}
+
+		for (var i = 0; i < ltwhArrays.length; i+=4) {
+			ltwhArrays[i+2] = Math.round(ltwhArrays[i+2]*scale);
+			ltwhArrays[i+3] = Math.round(ltwhArrays[i+3]*scale);
+			ltwhArrays[i] = Math.round(ltwhArrays[i]*scale);
+			ltwhArrays[i+1] = Math.round(ltwhArrays[i+1]*scale);
+		}
+
+		ltrbInfo[0] = ltwhArrays[0];
+		ltrbInfo[1] = ltwhArrays[1];
+		ltrbInfo[2] = ltwhArrays[2];
+		ltrbInfo[3] = ltwhArrays[3];
+		for (var i = 0; i < 4; ++i)
+		{
+			ltrbInfo[i] = parseInt(ltrbInfo[i]);
+		}
+
+		for (var i = 0; i < ltwhArrays.length; i+=4) {
+			var l = (ltwhArrays[i]);
+			var t = (ltwhArrays[i+1]);
+			if (i < 4) {
+				l -= ltrbInfo[0];
+				t -= ltrbInfo[1];
+			}
+			var r = ltwhArrays[i+2]+l;
+			var b = ltwhArrays[i+3]+t;
+			if(i == 0){
+				ltrb += l+','+t+','+r+','+b;
+			}else{
+				ltrb += '('+l+','+t+','+r+','+b+')';
+				pips.push(l+','+t+','+r+','+b);
+			}
+		}
+
+
+		var pipJson = {
+			ltrb : ltrb,
+			pips : pips,
+			ltrbInfo : ltrbInfo
+		};
+		return pipJson;
+	},
 	
 	
 	

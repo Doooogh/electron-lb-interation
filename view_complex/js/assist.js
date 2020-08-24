@@ -801,6 +801,7 @@ $(document).ready(function() {
 					
 
 		function showWin(allVideos){
+			debugger;
 			console.log("fayanren="+fayanren);
 			var peer = findRemotePeer(parseInt(fayanren));
 			if($('#allRoom .zhujiangren').length > 0 && peer){
@@ -817,8 +818,11 @@ $(document).ready(function() {
 
 				$(".icon_unhook").show();
 			}
+
 			for (var j = 0; j < videoList.length; j++) 
-			{	var is_have = false;
+			{
+
+				var is_have = false;
 				var snId = videoList[j].split("_");
 				for(var i=0; i<allVideos.length; i++)
 				{
@@ -849,6 +853,8 @@ $(document).ready(function() {
 				{
 					var snId = videoList[j].split("_");
 					var _peer = findRemotePeer(allVideos[i].mcu_id);
+
+
 					if(_peer.client_id == snId[0])
 					{
 						is_show = true;
@@ -858,6 +864,7 @@ $(document).ready(function() {
 
 				if(!is_show)
 				{
+
 					var _peer = findRemotePeer(allVideos[i].mcu_id);
 					hookAllWindow(_peer.client_id,0,allVideos[i].sdp);
 					
@@ -998,9 +1005,9 @@ $(document).ready(function() {
 			if($('#'+userId+' div').length ==0) return;
 			if(move){
 
-				
+				//是否有音量显示  设置音量大小
 				var vol = window.Electron.readConf().vol;
-		  		
+		  		alert(vol)
 		  		if(sn == speaker_id){
 			  		vol=0;
 		  		}

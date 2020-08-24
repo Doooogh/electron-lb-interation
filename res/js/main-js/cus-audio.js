@@ -1,9 +1,12 @@
 let currentAideo;
 const cusUtils=require('./cus-utils.js')
 const cusConst = require('./const.js');
+const cusGlobalParam=require('./cus-opreation-global-param')
 //后期更换
 let WIN_MAX_STREAMS = cusConst.WIN_MAX_STREAMS,
 	MAX_STREAMS =  cusConst.MAX_STREAMS;
+let myAudioStreamindex;
+let interval_int;
 
 
 var cusAudio={
@@ -96,7 +99,7 @@ var cusAudio={
 		console.log("------------------closeAudio---------------------------:"+streamindex)
 		// confLib.YXV_ConfRemoveStream(confHandle,streamindex)
 		for (var i = 0; i < MAX_STREAMS; i++) {
-			var strIndex = g_streamArr[i];
+			var strIndex = cusGlobalParam.g_streamArrGet(i);
 			if(strIndex != null){
 				strIndex = null;
 				break;

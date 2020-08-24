@@ -13,8 +13,9 @@ var _confPath=cusConst._confPath;
 var cusSystem={
 
 	getFlagAndMil:(win)=>{
-		console.log("---------flag-----"+cusUtils.readConf('flag'));
+		console.log("---------flag---------------------------------"+cusUtils.readConf('flag'));
 		var webContents = win.webContents;
+		console.log(cusUtils.readConf('flag'));
 		webContents.send('onGetFlagAndMil', cusUtils.readConf('flag'),cusUtils.readConf('millisecond'));
 	},
 	
