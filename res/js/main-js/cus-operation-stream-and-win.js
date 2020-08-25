@@ -1,5 +1,5 @@
-const confLib=require('./conf-lib.js')
 const loger = require('../loger.js')
+const confLib=require('./conf-lib.js')
 const libParamType=require('./cus-lib-param-type.js')
 const cusConst=require('./const.js')
 const cusUtils=require('./cus-utils.js')
@@ -39,8 +39,9 @@ var cusStreamWin={
 	avr_FindOrAddStream:(url)=> {
 		loger.info("global g_streamArr-----------------"+global.g_streamArr);
 
+
 		if (url == null) url = "";
-		for (var i = 0; i < MAX_STREAMS; ++i) {
+		 for (var i = 0; i < MAX_STREAMS; ++i) {
 			if (cusGlobalParam.g_streamArrGet(i) != null && cusGlobalParam.g_streamArrGet(i).url == url) {
 				++cusGlobalParam.g_streamArrGet(i).refCount;
 				loger.info('hookWindow:avr_FindOrAddStream ' + url + ' return existing-' + i);
@@ -48,31 +49,32 @@ var cusStreamWin={
 			}
 		}
 
+                loger.info("global g_streamArr-----------------"+global.g_streamArr);
+                         var newIndex = cusStreamWin.avr_findIdleStreamIndex();
+                          loger.info("global.g_streamArr newIndex"+newIndex);
+                          var srInfo = {};
+                          srInfo.url = url;
+                          srInfo.refCount = 1;
+                          srInfo.rIndex = -1;
+                          srInfo.index = newIndex;
+                          cusGlobalParam.g_streamArrSet(newIndex,srInfo);
 
-		var newIndex = cusStreamWin.avr_findIdleStreamIndex();
-		loger.info("global.g_streamArr newIndex"+newIndex);
-		var srInfo = {};
-		srInfo.url = url;
-		srInfo.refCount = 1;
-		srInfo.rIndex = -1;
-		srInfo.index = newIndex;
-		cusGlobalParam.g_streamArrSet(newIndex,srInfo);
+                            var delayMS = cusUtils.readConf("millisecond");
 
-		  var delayMS = cusUtils.readConf("millisecond");
-
-		  loger.info("cusGlobalParam.g_streamArrGet()-----------------------------------");
-		  loger.info(cusGlobalParam.g_streamArrGet());
-	loger.info(confLib);
-	 if (delayMS == null) delayMS = 200;
-		loger.info("confLib.YXV_ConfAddStream  start-----------------------------------");
-		loger.info(libParamType.confHandle);
-		loger.info( srInfo.index);
-		loger.info(url);
-		loger.info(delayMS);
-		loger.info("confLib.YXV_ConfAddStream   end-----------------------------------");
-		var addStreamResult = confLib.YXV_ConfAddStream(libParamType.confHandle, srInfo.index, url, delayMS);
-       loger.info('hookWindow:YXV_ConfAddStream=streamindex-'+srInfo.index+':result-'+addStreamResult+':url-'+url+':delay-'+delayMS);
-       return srInfo.index;
+                            loger.info("cusGlobalParam.g_streamArrGet()-----------------------------------");
+                            loger.info(cusGlobalParam.g_streamArrGet());
+                      loger.info(confLib);
+                    if (delayMS == null) delayMS = 200;
+                    loger.info("confLib.YXV_ConfAddStream  start-----------------------------------");
+                    loger.info(libParamType.confHandle);
+                    loger.info( srInfo.index);
+                    loger.info(url);
+                    loger.info(delayMS);
+                    loger.info("confLib.YXV_ConfAddStream   end-----------------------------------");
+                    // 1 rtmp://play.easyhao.com/mp4/pcCode_8 200
+		              var addStreamResult = confLib.YXV_ConfAddStream(libParamType.confHandle, srInfo.index, url, delayMS);
+                    loger.info('hookWindow:YXV_ConfAddStream=streamindex-'+srInfo.index+':result-'+addStreamResult+':url-'+url+':delay-'+delayMS);
+                    return srInfo.index;
 	},
 	
 	avr_findIdleStreamIndex:()=>{
@@ -372,8 +374,9 @@ var cusStreamWin={
 	 * @param clickWindowId
 	 */
 	hookWindow:(mainWindow,vwl,ltwhArrays,urls,snList,noVolList,clickWindowId)=>{
-		loger.info("url[0]------------------------")
-		loger.info(url)
+		loger.info("url[0]--------------------hookWindow----")
+		loger.info(urls)
+		loger.info("url[0]----log end----------------hookWindow----")
 		if(!urls[0]) return;
 	   	loger.info('hookWindow:ltwhArrays='+ltwhArrays+';urls='+urls+';snList='+snList+';noVolList='+noVolList + ";windowId"+clickWindowId);
 	   	var pipJson = cusUtils.initPips(ltwhArrays);
@@ -447,18 +450,18 @@ var cusStreamWin={
 		streamIndexArray[0] = cusStreamWin.avr_FindOrAddStream(urls[0]);
 		vwNew.streamIndex[0] = streamIndexArray[0];
 
-            var retWinIndex1 = new Buffer(4);
-    var addDisplay2Result = confLib.YXV_ConfAddDisplay2(confHandle, vwNew.streamIndex[0], 0, pipJson.ltrb, hwnd, retWinIndex1);
-    loger.info('hookWindow:YXV_ConfAddDisplay2=streamindex-'+vwNew.streamIndex[0]+':ltrb-'+pipJson.ltrb+':hwnd-'+hwnd+':result-'+addDisplay2Result);
+		var retWinIndex1 = new Buffer(4);
+		var addDisplay2Result = confLib.YXV_ConfAddDisplay2(confHandle, vwNew.streamIndex[0], 0, pipJson.ltrb, hwnd, retWinIndex1);
+		loger.info('hookWindow:YXV_ConfAddDisplay2=streamindex-'+vwNew.streamIndex[0]+':ltrb-'+pipJson.ltrb+':hwnd-'+hwnd+':result-'+addDisplay2Result);
 
-    vwNew.winIndex[0] = retWinIndex1.readUInt32LE(0);
-    winIndexList[0] = "" + clickWindowId + "|" + vwNew.winIndex[0];
+		vwNew.winIndex[0] = retWinIndex1.readUInt32LE(0);
+		winIndexList[0] = "" + clickWindowId + "|" + vwNew.winIndex[0];
 
-    var vol = noVolList? noVolList[0] ? noVolList[0] : 0 : 0;
-    confLib.YXV_ConfSetStreamVol(confHandle, vwNew.streamIndex[0], vol);
+		var vol = noVolList? noVolList[0] ? noVolList[0] : 0 : 0;
+		confLib.YXV_ConfSetStreamVol(confHandle, vwNew.streamIndex[0], vol);
 
-    var webContents = mainWindow.webContents;
-    webContents.send('onhook', snList, streamIndexArray, winIndexList);
+		var webContents = mainWindow.webContents;
+		webContents.send('onhook', snList, streamIndexArray, winIndexList);
 
 		//loger.info('hookWindow:YXV_ConfSetStreamVol='+streamindexList[i]+':vol-'+vol+':result-'+setStramVolResult);
 	

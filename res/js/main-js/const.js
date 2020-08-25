@@ -1,9 +1,6 @@
 /**
  * 常量
  */
-/**
- *常量
- */
 const os = require('os');
 const config = require('./../../../conf.js')
 

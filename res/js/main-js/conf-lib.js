@@ -2,13 +2,17 @@ const path = require('path')
 const ffi = require('ffi')
 const loger = require('../loger.js')
 const paramType=require('./cus-lib-param-type.js')
-var dllPath =  path.join('./../../../AVConfLib.dll')
-/*loger.info("dllPath:___"+dllPath)*/
+var dllPath =  path.join('AVConfLib.dll')
+loger.info("dllPath:___"+dllPath)
+loger.info("paramType:___"+JSON.stringify(paramType))
+
+
+
 var confLib = ffi.Library(dllPath, {
     'YXV_ConfFindTitleOffset': ['void', [ 'pointer', 'pointer', 'pointer' ] ],
     'YXV_ConfInit': ['int', [ paramType.YXV_ConfPtrPtr ]],
     'YXV_ConfAddStream': ['int', [paramType.YXV_ConfPtr, 'int', 'string','int']],//加载视频
-    'YXV_ConfRemoveStream': ['void', [paramType.YXV_ConfPtr, 'int']], 
+    'YXV_ConfRemoveStream': ['void', [paramType.YXV_ConfPtr, 'int']],
     'YXV_ConfAddDisplay': ['int', [paramType.YXV_ConfPtr, 'int', 'int', 'int', 'int', 'int', 'int', 'pointer', 'pointer']],
     'YXV_ConfAddDisplay2': ['int', [paramType.YXV_ConfPtr, 'int', 'int', 'string', 'pointer', 'pointer']],//string:l,t,r,b(10,0,0,20)(10,2,3,20)
     'YXV_ConfRemoveDisplay': ['void', [paramType.YXV_ConfPtr, 'int', 'int']],//streamindex， winindex
@@ -19,7 +23,7 @@ var confLib = ffi.Library(dllPath, {
 	'YXV_ConfStartSend':['int',[paramType.YXV_ConfPtr,'int','string']],//入会
 	'YXV_ConfGetStreamVol':['int',[paramType.YXV_ConfPtr,'int','pointer']],//获取音量  streamindex， （返回参数）vol
 	'YXV_ConfSetStreamVol':['int',[paramType.YXV_ConfPtr,'int','int']],//设置音量  streamindex， vol
-	'YXV_ConfSetStreamAEC':['int',[paramType.YXV_ConfPtr,'int','int','int']],//回声抑制设置  int参数：1开启，0关闭 
+	'YXV_ConfSetStreamAEC':['int',[paramType.YXV_ConfPtr,'int','int','int']],//回声抑制设置  int参数：1开启，0关闭
 	'YXV_ConfStartRec':['int',[paramType.YXV_ConfPtr,'string']],//开始录制  参数filePath
 	'YXV_ConfStopRec':['int',[paramType.YXV_ConfPtr]],//结束录制
 	'YXV_ConfMoveDisplay':['int',[paramType.YXV_ConfPtr,'int','int','int', 'int', 'int', 'int']],//移动窗口，参数  streamindex,winIndex,left,top,left+width,top+height

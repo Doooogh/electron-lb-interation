@@ -801,7 +801,6 @@ $(document).ready(function() {
 					
 
 		function showWin(allVideos){
-			debugger;
 			console.log("fayanren="+fayanren);
 			var peer = findRemotePeer(parseInt(fayanren));
 			if($('#allRoom .zhujiangren').length > 0 && peer){

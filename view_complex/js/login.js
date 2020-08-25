@@ -81,19 +81,9 @@ function login(param){
 				                  if(child_data.hasOwnProperty('lesson')){
 				                    var lessonId = child_data.lesson.lessonId;
 				                    processParam = 'id='+userId+'&lessonId='+lessonId+'&token='+token;
-				                   /* createWindow(processParam);
-									global.isSuccessLogin=true;
-									 winObj.webContents.send("loginOver",true);
-				                    if(initWindow!=null){
-				                      initWindow.close();
-				                    } */
 									ipcRenderer.send('createWindowByProcessParam',processParam);
 									window.Electron.saveConf(confParam); 
 									currentWindow.close();
-									// ipcRenderer.send('closeWinByWinObj',currentWindow);
-									/* if(initWindow!=null){
-									  initWindow.close();
-									} */
 				                  }else{
 				                    errorMsg = "no_course";
 				                    cusWin.createErrorWindow()
@@ -158,11 +148,6 @@ function userLogin(param){
 }
 
 
-//获取配置文件
-function getConfData(){
-	
-	
-}
 
 
 $(function(){
