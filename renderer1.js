@@ -27,16 +27,16 @@ global.canRec;
 let time_interval;
 
 var libParamType=require('./res/js/main-js/cus-lib-param-type.js')
+var cusGlobalParam=require('./res/js/main-js/cus-opreation-global-param.js')
 
-
-let YXV_Conf = 'void' // `sqlite3` is an "opaque" type, so we don't know its layout
+/*let YXV_Conf = 'void' // `sqlite3` is an "opaque" type, so we don't know its layout
   , YXV_ConfPtr = ref.refType(YXV_Conf)
   , YXV_ConfPtrPtr = ref.refType(YXV_ConfPtr)
   , stringPtr = ref.refType('string')
 
 let YXV_Conf_R = 'void' // `sqlite3` is an "opaque" type, so we don't know its layout
   , YXV_ConfPtr_R = ref.refType(YXV_Conf_R)
-  , YXV_ConfPtrPtr_R = ref.refType(YXV_ConfPtr_R)
+  , YXV_ConfPtrPtr_R = ref.refType(YXV_ConfPtr_R)*/
 
 
 /*
@@ -52,8 +52,9 @@ let YXV_Conf_R = libParamType.YXV_Conf_R // `sqlite3` is an "opaque" type, so we
 
 var dllPath =  path.join('AVConfLib.dll')
 
-// const confLib=require('./res/js/main-js/conf-lib')
+const confLib=require('./res/js/main-js/conf-lib')
 
+/*
 var confLib = ffi.Library(dllPath, {
     'YXV_ConfFindTitleOffset': ['void', [ 'pointer', 'pointer', 'pointer' ] ],
     'YXV_ConfInit': ['int', [ YXV_ConfPtrPtr ]],
@@ -100,15 +101,15 @@ var confLib = ffi.Library(dllPath, {
       'YXV_ConfWriteRegistry':['int',['string','string','string']]
   });
 
+*/
 
 
-let confHandlePtr = ref.alloc(YXV_ConfPtrPtr)
-confLib.YXV_ConfInit(confHandlePtr)
-let confHandle = confHandlePtr.deref()  //方法中使用到了
-
-
-let confHandlePtr_R = ref.alloc(YXV_ConfPtrPtr_R)  //方法中使用到了
-let confHandle_R; //方法中使用到了
+const cusLibParamAfter=require('./res/js/main-js/cus-lib-param-type-after')
+/*let confHandlePtr = ref.alloc(libParamType.YXV_ConfPtrPtr)
+confLib.YXV_ConfInit(confHandlePtr)*/
+let confHandle = cusLibParamAfter.confHandle//方法中使用到了
+let confHandlePtr_R = cusLibParamAfter.confHandlePtr_R //方法中使用到了
+// let confHandle_R; //方法中使用到了
 
 
 /*
@@ -1087,11 +1088,12 @@ exports.startRec =function(win,width,height,mianStrIndex){
 	loger.info('startRec:YXV_ConfROpen=width-'+width+':height-'+height+':result-'+open_result);
 	var is_ok = true;
 	if(open_result == 0){
-		confHandle_R = confHandlePtr_R.deref();
-
-		for (var i = 0; i < MAX_STREAMS; i++) {
+		// confHandle_R = confHandlePtr_R.deref();
+		cusGlobalParam.g_confHandle_R_Set(confHandlePtr_R.deref())
+;		for (var i = 0; i < MAX_STREAMS; i++) {
 			if (g_streamArr[i] != null) {
-				var addStream_result = confLib.YXV_ConfRAddStream(confHandle_R,i,retWinIndex1);
+				// var addStream_result = confLib.YXV_ConfRAddStream(confHandle_R,i,retWinIndex1);
+				var addStream_result = confLib.YXV_ConfRAddStream(cusGlobalParam.g_confHandle_R_Get(),i,retWinIndex1);
 				loger.info('startRec:YXV_ConfRAddStream=streamindex-'+i+':result-'+addStream_result);
 				var winindex = retWinIndex1.readUInt32LE(0);
 				res_index_list.push(i+"_"+winindex);
@@ -1099,12 +1101,14 @@ exports.startRec =function(win,width,height,mianStrIndex){
 				g_streamArr[i].rIndex = winindex;
 			}
 		}
-		confLib.YXV_ConfRSwitchMain(confHandle_R,mianStrIndex);
+		// confLib.YXV_ConfRSwitchMain(confHandle_R,mianStrIndex);
+		confLib.YXV_ConfRSwitchMain(cusGlobalParam.g_confHandle_R_Get(),mianStrIndex);
 	}
 
 	//生成文件夹但没有录制文件得问题
 	// if(is_ok){
-		var startRes_result = confLib.YXV_ConfRStartRec(confHandle_R,true,dirpath);
+	// 	var startRes_result = confLib.YXV_ConfRStartRec(confHandle_R,true,dirpath);
+		var startRes_result = confLib.YXV_ConfRStartRec(cusGlobalParam.g_confHandle_R_Get(),true,dirpath);
 		loger.info('startRec:YXV_ConfRStartRec=dirpath-'+dirpath+':result-'+startRes_result);
 	// }
 	
@@ -1136,10 +1140,14 @@ exports.stopRec =function(win){
 	
 	var webContents = win.webContents;
 	clearInterval(time_interval);
-	var stopRecResult = confLib.YXV_ConfRStopRec(confHandle_R);
-	loger.info('stopRec:YXV_ConfRStopRec=confHandle_R-'+confHandle_R+':result-'+stopRecResult);
-	var rCloseResult = confLib.YXV_ConfRClose(confHandle_R);
-	loger.info('stopRec:YXV_ConfRClose=confHandle_R-'+confHandle_R+':result-'+rCloseResult);
+	// var stopRecResult = confLib.YXV_ConfRStopRec(confHandle_R);
+	var stopRecResult = confLib.YXV_ConfRStopRec(cusGlobalParam.g_confHandle_R_Get());
+	// loger.info('stopRec:YXV_ConfRStopRec=confHandle_R-'+confHandle_R+':result-'+stopRecResult);
+	loger.info('stopRec:YXV_ConfRStopRec=confHandle_R-'+cusGlobalParam.g_confHandle_R_Get()+':result-'+stopRecResult);
+	// var rCloseResult = confLib.YXV_ConfRClose(confHandle_R);
+	var rCloseResult = confLib.YXV_ConfRClose(cusGlobalParam.g_confHandle_R_Get());
+	// loger.info('stopRec:YXV_ConfRClose=confHandle_R-'+confHandle_R+':result-'+rCloseResult);
+	loger.info('stopRec:YXV_ConfRClose=confHandle_R-'+cusGlobalParam.g_confHandle_R_Get()+':result-'+rCloseResult);
 
 	for (var i = 0; i < MAX_STREAMS; i++) {
 		if (g_streamArr[i] != null) {
@@ -1189,11 +1197,13 @@ exports.switchPip = function (main_stream_index,fyr_stream_index){
 		}
 	}
 	setTimeout(function(){
-		var switch_result = confLib.YXV_ConfRSwitchPip(confHandle_R,param);
+		// var switch_result = confLib.YXV_ConfRSwitchPip(confHandle_R,param);
+		var switch_result = confLib.YXV_ConfRSwitchPip(cusGlobalParam.g_confHandle_R_Get(),param);
 		loger.info('switchPip:YXV_ConfRSwitchPip=param-'+param+':result-'+switch_result);
 		if (firstPipIsBig) {
 			global_pip_caller = setTimeout(function () {
-				switch_result = confLib.YXV_ConfRSwitchPip(confHandle_R,param2);
+				// switch_result = confLib.YXV_ConfRSwitchPip(confHandle_R,param2);
+				switch_result = confLib.YXV_ConfRSwitchPip(cusGlobalParam.g_confHandle_R_Get(),param2);
 				loger.info('switchPip:YXV_ConfRSwitchPip_tosmall=param-'+param2+':result-'+switch_result);
 			}, global_student_up);
 		}
@@ -1214,7 +1224,8 @@ exports.switchMain = function (main_stream_index){
 		if(str[0] == main_stream_index){
 			
 			setTimeout(function(){
-				var switch_result = confLib.YXV_ConfRSwitchMain(confHandle_R,str[1]);
+				// var switch_result = confLib.YXV_ConfRSwitchMain(confHandle_R,str[1]);
+				var switch_result = confLib.YXV_ConfRSwitchMain(cusGlobalParam.g_confHandle_R_Get(),str[1]);
 				loger.info('switchPip:YXV_ConfRSwitchMain=param-'+str[1]+':result-'+switch_result);
 			},200-40);
 			break;

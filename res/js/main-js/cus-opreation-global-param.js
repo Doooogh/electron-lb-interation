@@ -31,6 +31,12 @@ var cusGlobal={
         }
         return  global.g_streamArr;
     },
+    g_confHandle_R_Set:(value)=>{
+        global.confHandle_R=value;
+    },
+    g_confHandle_R_Get:()=>{
+        return global.confHandle_R;
+    }
 
 
 

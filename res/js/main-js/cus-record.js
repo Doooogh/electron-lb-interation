@@ -37,7 +37,7 @@ global.canRec;
 let WIN_MAX_STREAMS = cusConst.WIN_MAX_STREAMS,
 	MAX_STREAMS =  cusConst.MAX_STREAMS;
 
-let confHandlePtr =confLibParam.confHandlePtr;
+/*let confHandlePtr =confLibParam.confHandlePtr;
 
 
 let confHandle = confHandlePtr.deref()
@@ -45,6 +45,15 @@ let confHandle = confHandlePtr.deref()
 let confHandlePtr_R = confLibParam.confHandlePtr_R;
 
 let confHandle_R=confLibParam.confHandle_R;
+
+
+ */
+
+const cusLibParamAfter=require('./cus-lib-param-type-after')
+
+let confHandle = cusLibParamAfter.confHandle//方法中使用到了
+let confHandlePtr_R = cusLibParamAfter.confHandlePtr_R //方法中使用到了
+
 
 var record={
 
