@@ -52,9 +52,8 @@ let YXV_Conf_R = libParamType.YXV_Conf_R // `sqlite3` is an "opaque" type, so we
 
 var dllPath =  path.join('AVConfLib.dll')
 
-const confLib=require('./res/js/main-js/conf-lib')
+// const confLib=require('./res/js/main-js/conf-lib')
 
-/*
 var confLib = ffi.Library(dllPath, {
     'YXV_ConfFindTitleOffset': ['void', [ 'pointer', 'pointer', 'pointer' ] ],
     'YXV_ConfInit': ['int', [ YXV_ConfPtrPtr ]],
@@ -100,7 +99,6 @@ var confLib = ffi.Library(dllPath, {
       'YXV_ConfGetTaskBarInfo':['int',['pointer', 'pointer','pointer']],
       'YXV_ConfWriteRegistry':['int',['string','string','string']]
   });
-*/
 
 
 
