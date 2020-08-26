@@ -4,7 +4,7 @@ const BrowserView = electron.BrowserView
 var ref = require('ref')
 const ffi = require('ffi')
 var UUID = require('uuid');
-const config = require('.//conf.js')
+const config = require('./conf.js')
 const loger = require('./res/js/loger.js')
 const path = require('path')
 var fs = require('fs')
@@ -26,9 +26,6 @@ global.res_index_list;
 global.canRec;
 let time_interval;
 
-var libParamType=require('./res/js/main-js/cus-lib-param-type.js')
-
-
 let YXV_Conf = 'void' // `sqlite3` is an "opaque" type, so we don't know its layout
   , YXV_ConfPtr = ref.refType(YXV_Conf)
   , YXV_ConfPtrPtr = ref.refType(YXV_ConfPtr)
@@ -38,87 +35,62 @@ let YXV_Conf_R = 'void' // `sqlite3` is an "opaque" type, so we don't know its l
   , YXV_ConfPtr_R = ref.refType(YXV_Conf_R)
   , YXV_ConfPtrPtr_R = ref.refType(YXV_ConfPtr_R)
 
-
-/*
-let YXV_Conf = libParamType.YXV_Conf // `sqlite3` is an "opaque" type, so we don't know its layout
-	, YXV_ConfPtr = libParamType.YXV_ConfPtr
-	, YXV_ConfPtrPtr =libParamType.YXV_ConfPtrPtr
-	, stringPtr =libParamType.stringPtr
-
-let YXV_Conf_R = libParamType.YXV_Conf_R // `sqlite3` is an "opaque" type, so we don't know its layout
-	, YXV_ConfPtr_R =libParamType.YXV_ConfPtr_R
-	, YXV_ConfPtrPtr_R = libParamType.YXV_ConfPtrPtr_R
-	 confHandlePtr = libParamType.confHandlePtr*/
-
 var dllPath =  path.join('AVConfLib.dll')
 
-const confLib=require('./res/js/main-js/conf-lib')
-
-/*
+/*var  dllPath = path.join(__dirname, './AVConfLib.dll');*/
 var confLib = ffi.Library(dllPath, {
-    'YXV_ConfFindTitleOffset': ['void', [ 'pointer', 'pointer', 'pointer' ] ],
-    'YXV_ConfInit': ['int', [ YXV_ConfPtrPtr ]],
-    'YXV_ConfAddStream': ['int', [YXV_ConfPtr, 'int', 'string','int']],//加载视频
-    'YXV_ConfRemoveStream': ['void', [YXV_ConfPtr, 'int']],
-	  'YXV_ConfAddDisplay': ['int', [YXV_ConfPtr, 'int', 'int', 'int', 'int', 'int', 'int', 'pointer', 'pointer']],
-      'YXV_ConfAddDisplay2': ['int', [YXV_ConfPtr, 'int', 'int', 'string', 'pointer', 'pointer']],//string:l,t,r,b(10,0,0,20)(10,2,3,20)
-      'YXV_ConfRemoveDisplay': ['void', [YXV_ConfPtr, 'int', 'int']],//streamindex， winindex
-      'YXV_ConfExit': ['void', [YXV_ConfPtr]],
-      'YXV_ConfGetDevNameListV':['int',['int','string']],//获取视频字符串
-      'YXV_ConfGetDevNameListA':['int',['int','string']],//获取音频字符串
-      'YXV_ConfAddLocalStream':['int',[YXV_ConfPtr,'int','string','string','int','int']],//加载本地音视频
-      'YXV_ConfStartSend':['int',[YXV_ConfPtr,'int','string']],//入会
-      'YXV_ConfGetStreamVol':['int',[YXV_ConfPtr,'int','pointer']],//获取音量  streamindex， （返回参数）vol
-      'YXV_ConfSetStreamVol':['int',[YXV_ConfPtr,'int','int']],//设置音量  streamindex， vol
-      'YXV_ConfSetStreamAEC':['int',[YXV_ConfPtr,'int','int','int']],//回声抑制设置  int参数：1开启，0关闭
-      'YXV_ConfStartRec':['int',[YXV_ConfPtr,'string']],//开始录制  参数filePath
-      'YXV_ConfStopRec':['int',[YXV_ConfPtr]],//结束录制
-      'YXV_ConfMoveDisplay':['int',[YXV_ConfPtr,'int','int','int', 'int', 'int', 'int']],//移动窗口，参数  streamindex,winIndex,left,top,left+width,top+height
-      'YXV_ConfMoveDisplay2':['int',[YXV_ConfPtr,'int','int','string']],//string:l,t,r,b(10,0,0,20)(10,2,3,20)
-      'YXV_ConfChangeDisplay':['int',[YXV_ConfPtr,'int','int','int','pointer']],//替换streamindex
-      //------------------------------------------------------------------
-      //int-1:是否混合(0|1)，
-      //int-2:混合结果width
-      //int-3:height
-      //int-4:码率（w*h*3）
-      //int-5:帧率(15~30)
-      //int-6：音频通道数（1，单通道   2 立体声）1
-      //int-7：音频采样率 （48000）
-      //int-8：音频码率（128000）
-      'YXV_ConfROpen':['int',[YXV_ConfPtr,'int','int','int', 'int', 'int', 'int', 'int', 'int',YXV_ConfPtrPtr_R]],
-      'YXV_ConfRAddStream':['int',[YXV_ConfPtr_R,'int','pointer']],
-      'YXV_ConfRRemoveStream':['int',[YXV_ConfPtr_R,'int']],
-      'YXV_ConfRStartRec':['int',[YXV_ConfPtr_R,'int','string']],
-      'YXV_ConfRStopRec':['int',[YXV_ConfPtr_R]],
-      'YXV_ConfRSwitchPip':['int',[YXV_ConfPtr_R,'string']],
-      'YXV_ConfRSwitchMain':['int',[YXV_ConfPtr_R,'int']],
-      'YXV_ConfRClose':['int',[YXV_ConfPtr_R]],
-      'YXV_ConfRCanMix':['int',[]],
-      'YXV_ConfScreenShotEx':['int',['string','pointer','pointer']],//path,
-      // YXV_ConfScreenShotEx(const yuint8_t* filename, YXC_Window* window1, YXC_Window* window2);
-      'YXV_ConfMakeWindowFullScreen':['int',['pointer']],
-      'YXV_ConfGetTaskBarInfo':['int',['pointer', 'pointer','pointer']],
-      'YXV_ConfWriteRegistry':['int',['string','string','string']]
-  });
-*/
-
+	'YXV_ConfFindTitleOffset': ['void', [ 'pointer', 'pointer', 'pointer' ] ],
+	'YXV_ConfInit': ['int', [ YXV_ConfPtrPtr ]],
+	'YXV_ConfAddStream': ['int', [YXV_ConfPtr, 'int', 'string','int']],//加载视频
+	'YXV_ConfRemoveStream': ['void', [YXV_ConfPtr, 'int']],
+	'YXV_ConfAddDisplay': ['int', [YXV_ConfPtr, 'int', 'int', 'int', 'int', 'int', 'int', 'pointer', 'pointer']],
+	'YXV_ConfAddDisplay2': ['int', [YXV_ConfPtr, 'int', 'int', 'string', 'pointer', 'pointer']],//string:l,t,r,b(10,0,0,20)(10,2,3,20)
+	'YXV_ConfRemoveDisplay': ['void', [YXV_ConfPtr, 'int', 'int']],//streamindex， winindex
+	'YXV_ConfExit': ['void', [YXV_ConfPtr]],
+	'YXV_ConfGetDevNameListV':['int',['int','string']],//获取视频字符串
+	'YXV_ConfGetDevNameListA':['int',['int','string']],//获取音频字符串
+	'YXV_ConfAddLocalStream':['int',[YXV_ConfPtr,'int','string','string','int','int']],//加载本地音视频
+	'YXV_ConfStartSend':['int',[YXV_ConfPtr,'int','string']],//入会
+	'YXV_ConfGetStreamVol':['int',[YXV_ConfPtr,'int','pointer']],//获取音量  streamindex， （返回参数）vol
+	'YXV_ConfSetStreamVol':['int',[YXV_ConfPtr,'int','int']],//设置音量  streamindex， vol
+	'YXV_ConfSetStreamAEC':['int',[YXV_ConfPtr,'int','int','int']],//回声抑制设置  int参数：1开启，0关闭
+	'YXV_ConfStartRec':['int',[YXV_ConfPtr,'string']],//开始录制  参数filePath
+	'YXV_ConfStopRec':['int',[YXV_ConfPtr]],//结束录制
+	'YXV_ConfMoveDisplay':['int',[YXV_ConfPtr,'int','int','int', 'int', 'int', 'int']],//移动窗口，参数  streamindex,winIndex,left,top,left+width,top+height
+	'YXV_ConfMoveDisplay2':['int',[YXV_ConfPtr,'int','int','string']],//string:l,t,r,b(10,0,0,20)(10,2,3,20)
+	'YXV_ConfChangeDisplay':['int',[YXV_ConfPtr,'int','int','int','pointer']],//替换streamindex
+	//------------------------------------------------------------------
+	//int-1:是否混合(0|1)，
+	//int-2:混合结果width
+	//int-3:height
+	//int-4:码率（w*h*3）
+	//int-5:帧率(15~30)
+	//int-6：音频通道数（1，单通道   2 立体声）1
+	//int-7：音频采样率 （48000）
+	//int-8：音频码率（128000）
+	'YXV_ConfROpen':['int',[YXV_ConfPtr,'int','int','int', 'int', 'int', 'int', 'int', 'int',YXV_ConfPtrPtr_R]],
+	'YXV_ConfRAddStream':['int',[YXV_ConfPtr_R,'int','pointer']],
+	'YXV_ConfRRemoveStream':['int',[YXV_ConfPtr_R,'int']],
+	'YXV_ConfRStartRec':['int',[YXV_ConfPtr_R,'int','string']],
+	'YXV_ConfRStopRec':['int',[YXV_ConfPtr_R]],
+	'YXV_ConfRSwitchPip':['int',[YXV_ConfPtr_R,'string']],
+	'YXV_ConfRSwitchMain':['int',[YXV_ConfPtr_R,'int']],
+	'YXV_ConfRClose':['int',[YXV_ConfPtr_R]],
+	'YXV_ConfRCanMix':['int',[]],
+	'YXV_ConfScreenShotEx':['int',['string','pointer','pointer']],//path,
+	// YXV_ConfScreenShotEx(const yuint8_t* filename, YXC_Window* window1, YXC_Window* window2);
+	'YXV_ConfMakeWindowFullScreen':['int',['pointer']],
+	'YXV_ConfGetTaskBarInfo':['int',['pointer', 'pointer','pointer']],
+	'YXV_ConfWriteRegistry':['int',['string','string','string']]
+});
 
 
 let confHandlePtr = ref.alloc(YXV_ConfPtrPtr)
 confLib.YXV_ConfInit(confHandlePtr)
-let confHandle = confHandlePtr.deref()  //方法中使用到了
+let confHandle = confHandlePtr.deref()
 
-
-let confHandlePtr_R = ref.alloc(YXV_ConfPtrPtr_R)  //方法中使用到了
-let confHandle_R; //方法中使用到了
-
-
-/*
-confLib.YXV_ConfInit(confHandlePtr)
-let confHandle =libParamType.confHandle
-let confHandlePtr_R = libParamType.confHandlePtr_R
+let confHandlePtr_R = ref.alloc(YXV_ConfPtrPtr_R)
 let confHandle_R;
-*/
 
 
 const streamArray = []; 
