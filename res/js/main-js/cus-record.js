@@ -89,11 +89,10 @@ var record={
 		loger.info('startRec:YXV_ConfROpen=width-'+width+':height-'+height+':result-'+open_result);
 		var is_ok = true;
 		if(open_result == 0){
-			confHandle_R = confLibParam.confHandlePtr_R.deref();
-	
+			cusGlobalParam.g_confHandle_R_Set(confHandlePtr_R.deref())
 			for (var i = 0; i < MAX_STREAMS; i++) {
 				if (cusGlobalParam.g_streamArrGet(i) != null) {
-					var addStream_result = confLib.YXV_ConfRAddStream(confHandle_R,i,retWinIndex1);
+					var addStream_result = confLib.YXV_ConfRAddStream(cusGlobalParam.g_confHandle_R_Get(),i,retWinIndex1);
 					loger.info('startRec:YXV_ConfRAddStream=streamindex-'+i+':result-'+addStream_result);
 					var winindex = retWinIndex1.readUInt32LE(0);
 					res_index_list.push(i+"_"+winindex);
@@ -102,12 +101,12 @@ var record={
 					cusGlobalParam.g_streamArrGet(i).rIndex = winindex;
 				}
 			}
-			confLib.YXV_ConfRSwitchMain(confHandle_R,mianStrIndex);
+			confLib.YXV_ConfRSwitchMain(cusGlobalParam.g_confHandle_R_Get(),mianStrIndex);
 		}
 	
 		//生成文件夹但没有录制文件得问题
 		// if(is_ok){
-			var startRes_result = confLib.YXV_ConfRStartRec(confHandle_R,true,dirpath);
+			var startRes_result = confLib.YXV_ConfRStartRec(cusGlobalParam.g_confHandle_R_Get(),true,dirpath);
 			loger.info('startRec:YXV_ConfRStartRec=dirpath-'+dirpath+':result-'+startRes_result);
 		// }
 		
@@ -137,10 +136,10 @@ var record={
 		
 		var webContents = win.webContents;
 		clearInterval(time_interval);
-		var stopRecResult = confLib.YXV_ConfRStopRec(confHandle_R);
-		loger.info('stopRec:YXV_ConfRStopRec=confHandle_R-'+confHandle_R+':result-'+stopRecResult);
-		var rCloseResult = confLib.YXV_ConfRClose(confHandle_R);
-		loger.info('stopRec:YXV_ConfRClose=confHandle_R-'+confHandle_R+':result-'+rCloseResult);
+		var stopRecResult = confLib.YXV_ConfRStopRec(cusGlobalParam.g_confHandle_R_Get());
+		loger.info('stopRec:YXV_ConfRStopRec=confHandle_R-'+cusGlobalParam.g_confHandle_R_Get()+':result-'+stopRecResult);
+		var rCloseResult = confLib.YXV_ConfRClose(cusGlobalParam.g_confHandle_R_Get());
+		loger.info('stopRec:YXV_ConfRClose=confHandle_R-'+cusGlobalParam.g_confHandle_R_Get()+':result-'+rCloseResult);
 	
 		for (var i = 0; i < MAX_STREAMS; i++) {
 			if (cusGlobalParam.g_streamArrGet(i)!= null) {
@@ -190,11 +189,11 @@ var record={
 			}
 		}
 		setTimeout(function(){
-			var switch_result = confLib.YXV_ConfRSwitchPip(confHandle_R,param);
+			var switch_result = confLib.YXV_ConfRSwitchPip(cusGlobalParam.g_confHandle_R_Get(),param);
 			loger.info('switchPip:YXV_ConfRSwitchPip=param-'+param+':result-'+switch_result);
 			if (firstPipIsBig) {
 				global_pip_caller = setTimeout(function () {
-					switch_result = confLib.YXV_ConfRSwitchPip(confHandle_R,param2);
+					switch_result = confLib.YXV_ConfRSwitchPip(cusGlobalParam.g_confHandle_R_Get(),param2);
 					loger.info('switchPip:YXV_ConfRSwitchPip_tosmall=param-'+param2+':result-'+switch_result);
 				}, global_student_up);
 			}
@@ -214,7 +213,7 @@ var record={
 			if(str[0] == main_stream_index){
 				
 				setTimeout(function(){
-					var switch_result = confLib.YXV_ConfRSwitchMain(confHandle_R,str[1]);
+					var switch_result = confLib.YXV_ConfRSwitchMain(cusGlobalParam.g_confHandle_R_Get(),str[1]);
 					loger.info('switchPip:YXV_ConfRSwitchMain=param-'+str[1]+':result-'+switch_result);
 				},200-40);
 				break;
