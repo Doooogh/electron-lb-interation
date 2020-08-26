@@ -4,7 +4,7 @@ const BrowserView = electron.BrowserView
 var ref = require('ref')
 const ffi = require('ffi')
 var UUID = require('uuid');
-const config = require('./conf.js')
+const config = require('.//conf.js')
 const loger = require('./res/js/loger.js')
 const path = require('path')
 var fs = require('fs')
@@ -26,74 +26,101 @@ global.res_index_list;
 global.canRec;
 let time_interval;
 
-let YXV_Conf = 'void' // `sqlite3` is an "opaque" type, so we don't know its layout
+var libParamType=require('./res/js/main-js/cus-lib-param-type.js')
+var cusGlobalParam=require('./res/js/main-js/cus-opreation-global-param.js')
+
+/*let YXV_Conf = 'void' // `sqlite3` is an "opaque" type, so we don't know its layout
   , YXV_ConfPtr = ref.refType(YXV_Conf)
   , YXV_ConfPtrPtr = ref.refType(YXV_ConfPtr)
   , stringPtr = ref.refType('string')
 
 let YXV_Conf_R = 'void' // `sqlite3` is an "opaque" type, so we don't know its layout
   , YXV_ConfPtr_R = ref.refType(YXV_Conf_R)
-  , YXV_ConfPtrPtr_R = ref.refType(YXV_ConfPtr_R)
+  , YXV_ConfPtrPtr_R = ref.refType(YXV_ConfPtr_R)*/
+
+
+/*
+let YXV_Conf = libParamType.YXV_Conf // `sqlite3` is an "opaque" type, so we don't know its layout
+	, YXV_ConfPtr = libParamType.YXV_ConfPtr
+	, YXV_ConfPtrPtr =libParamType.YXV_ConfPtrPtr
+	, stringPtr =libParamType.stringPtr
+
+let YXV_Conf_R = libParamType.YXV_Conf_R // `sqlite3` is an "opaque" type, so we don't know its layout
+	, YXV_ConfPtr_R =libParamType.YXV_ConfPtr_R
+	, YXV_ConfPtrPtr_R = libParamType.YXV_ConfPtrPtr_R
+	 confHandlePtr = libParamType.confHandlePtr*/
 
 var dllPath =  path.join('AVConfLib.dll')
 
-/*var  dllPath = path.join(__dirname, './AVConfLib.dll');*/
+const confLib=require('./res/js/main-js/conf-lib')
+
+/*
 var confLib = ffi.Library(dllPath, {
-	'YXV_ConfFindTitleOffset': ['void', [ 'pointer', 'pointer', 'pointer' ] ],
-	'YXV_ConfInit': ['int', [ YXV_ConfPtrPtr ]],
-	'YXV_ConfAddStream': ['int', [YXV_ConfPtr, 'int', 'string','int']],//加载视频
-	'YXV_ConfRemoveStream': ['void', [YXV_ConfPtr, 'int']],
-	'YXV_ConfAddDisplay': ['int', [YXV_ConfPtr, 'int', 'int', 'int', 'int', 'int', 'int', 'pointer', 'pointer']],
-	'YXV_ConfAddDisplay2': ['int', [YXV_ConfPtr, 'int', 'int', 'string', 'pointer', 'pointer']],//string:l,t,r,b(10,0,0,20)(10,2,3,20)
-	'YXV_ConfRemoveDisplay': ['void', [YXV_ConfPtr, 'int', 'int']],//streamindex， winindex
-	'YXV_ConfExit': ['void', [YXV_ConfPtr]],
-	'YXV_ConfGetDevNameListV':['int',['int','string']],//获取视频字符串
-	'YXV_ConfGetDevNameListA':['int',['int','string']],//获取音频字符串
-	'YXV_ConfAddLocalStream':['int',[YXV_ConfPtr,'int','string','string','int','int']],//加载本地音视频
-	'YXV_ConfStartSend':['int',[YXV_ConfPtr,'int','string']],//入会
-	'YXV_ConfGetStreamVol':['int',[YXV_ConfPtr,'int','pointer']],//获取音量  streamindex， （返回参数）vol
-	'YXV_ConfSetStreamVol':['int',[YXV_ConfPtr,'int','int']],//设置音量  streamindex， vol
-	'YXV_ConfSetStreamAEC':['int',[YXV_ConfPtr,'int','int','int']],//回声抑制设置  int参数：1开启，0关闭
-	'YXV_ConfStartRec':['int',[YXV_ConfPtr,'string']],//开始录制  参数filePath
-	'YXV_ConfStopRec':['int',[YXV_ConfPtr]],//结束录制
-	'YXV_ConfMoveDisplay':['int',[YXV_ConfPtr,'int','int','int', 'int', 'int', 'int']],//移动窗口，参数  streamindex,winIndex,left,top,left+width,top+height
-	'YXV_ConfMoveDisplay2':['int',[YXV_ConfPtr,'int','int','string']],//string:l,t,r,b(10,0,0,20)(10,2,3,20)
-	'YXV_ConfChangeDisplay':['int',[YXV_ConfPtr,'int','int','int','pointer']],//替换streamindex
-	//------------------------------------------------------------------
-	//int-1:是否混合(0|1)，
-	//int-2:混合结果width
-	//int-3:height
-	//int-4:码率（w*h*3）
-	//int-5:帧率(15~30)
-	//int-6：音频通道数（1，单通道   2 立体声）1
-	//int-7：音频采样率 （48000）
-	//int-8：音频码率（128000）
-	'YXV_ConfROpen':['int',[YXV_ConfPtr,'int','int','int', 'int', 'int', 'int', 'int', 'int',YXV_ConfPtrPtr_R]],
-	'YXV_ConfRAddStream':['int',[YXV_ConfPtr_R,'int','pointer']],
-	'YXV_ConfRRemoveStream':['int',[YXV_ConfPtr_R,'int']],
-	'YXV_ConfRStartRec':['int',[YXV_ConfPtr_R,'int','string']],
-	'YXV_ConfRStopRec':['int',[YXV_ConfPtr_R]],
-	'YXV_ConfRSwitchPip':['int',[YXV_ConfPtr_R,'string']],
-	'YXV_ConfRSwitchMain':['int',[YXV_ConfPtr_R,'int']],
-	'YXV_ConfRClose':['int',[YXV_ConfPtr_R]],
-	'YXV_ConfRCanMix':['int',[]],
-	'YXV_ConfScreenShotEx':['int',['string','pointer','pointer']],//path,
-	// YXV_ConfScreenShotEx(const yuint8_t* filename, YXC_Window* window1, YXC_Window* window2);
-	'YXV_ConfMakeWindowFullScreen':['int',['pointer']],
-	'YXV_ConfGetTaskBarInfo':['int',['pointer', 'pointer','pointer']],
-	'YXV_ConfWriteRegistry':['int',['string','string','string']]
-});
+    'YXV_ConfFindTitleOffset': ['void', [ 'pointer', 'pointer', 'pointer' ] ],
+    'YXV_ConfInit': ['int', [ YXV_ConfPtrPtr ]],
+    'YXV_ConfAddStream': ['int', [YXV_ConfPtr, 'int', 'string','int']],//加载视频
+    'YXV_ConfRemoveStream': ['void', [YXV_ConfPtr, 'int']],
+	  'YXV_ConfAddDisplay': ['int', [YXV_ConfPtr, 'int', 'int', 'int', 'int', 'int', 'int', 'pointer', 'pointer']],
+      'YXV_ConfAddDisplay2': ['int', [YXV_ConfPtr, 'int', 'int', 'string', 'pointer', 'pointer']],//string:l,t,r,b(10,0,0,20)(10,2,3,20)
+      'YXV_ConfRemoveDisplay': ['void', [YXV_ConfPtr, 'int', 'int']],//streamindex， winindex
+      'YXV_ConfExit': ['void', [YXV_ConfPtr]],
+      'YXV_ConfGetDevNameListV':['int',['int','string']],//获取视频字符串
+      'YXV_ConfGetDevNameListA':['int',['int','string']],//获取音频字符串
+      'YXV_ConfAddLocalStream':['int',[YXV_ConfPtr,'int','string','string','int','int']],//加载本地音视频
+      'YXV_ConfStartSend':['int',[YXV_ConfPtr,'int','string']],//入会
+      'YXV_ConfGetStreamVol':['int',[YXV_ConfPtr,'int','pointer']],//获取音量  streamindex， （返回参数）vol
+      'YXV_ConfSetStreamVol':['int',[YXV_ConfPtr,'int','int']],//设置音量  streamindex， vol
+      'YXV_ConfSetStreamAEC':['int',[YXV_ConfPtr,'int','int','int']],//回声抑制设置  int参数：1开启，0关闭
+      'YXV_ConfStartRec':['int',[YXV_ConfPtr,'string']],//开始录制  参数filePath
+      'YXV_ConfStopRec':['int',[YXV_ConfPtr]],//结束录制
+      'YXV_ConfMoveDisplay':['int',[YXV_ConfPtr,'int','int','int', 'int', 'int', 'int']],//移动窗口，参数  streamindex,winIndex,left,top,left+width,top+height
+      'YXV_ConfMoveDisplay2':['int',[YXV_ConfPtr,'int','int','string']],//string:l,t,r,b(10,0,0,20)(10,2,3,20)
+      'YXV_ConfChangeDisplay':['int',[YXV_ConfPtr,'int','int','int','pointer']],//替换streamindex
+      //------------------------------------------------------------------
+      //int-1:是否混合(0|1)，
+      //int-2:混合结果width
+      //int-3:height
+      //int-4:码率（w*h*3）
+      //int-5:帧率(15~30)
+      //int-6：音频通道数（1，单通道   2 立体声）1
+      //int-7：音频采样率 （48000）
+      //int-8：音频码率（128000）
+      'YXV_ConfROpen':['int',[YXV_ConfPtr,'int','int','int', 'int', 'int', 'int', 'int', 'int',YXV_ConfPtrPtr_R]],
+      'YXV_ConfRAddStream':['int',[YXV_ConfPtr_R,'int','pointer']],
+      'YXV_ConfRRemoveStream':['int',[YXV_ConfPtr_R,'int']],
+      'YXV_ConfRStartRec':['int',[YXV_ConfPtr_R,'int','string']],
+      'YXV_ConfRStopRec':['int',[YXV_ConfPtr_R]],
+      'YXV_ConfRSwitchPip':['int',[YXV_ConfPtr_R,'string']],
+      'YXV_ConfRSwitchMain':['int',[YXV_ConfPtr_R,'int']],
+      'YXV_ConfRClose':['int',[YXV_ConfPtr_R]],
+      'YXV_ConfRCanMix':['int',[]],
+      'YXV_ConfScreenShotEx':['int',['string','pointer','pointer']],//path,
+      // YXV_ConfScreenShotEx(const yuint8_t* filename, YXC_Window* window1, YXC_Window* window2);
+      'YXV_ConfMakeWindowFullScreen':['int',['pointer']],
+      'YXV_ConfGetTaskBarInfo':['int',['pointer', 'pointer','pointer']],
+      'YXV_ConfWriteRegistry':['int',['string','string','string']]
+  });
+
+*/
 
 
-let confHandlePtr = ref.alloc(YXV_ConfPtrPtr)
+const cusLibParamAfter=require('./res/js/main-js/cus-lib-param-type-after')
+/*let confHandlePtr = ref.alloc(libParamType.YXV_ConfPtrPtr)
+confLib.YXV_ConfInit(confHandlePtr)*/
+let confHandle = cusLibParamAfter.confHandle//方法中使用到了
+let confHandlePtr_R = cusLibParamAfter.confHandlePtr_R //方法中使用到了
+// let confHandle_R; //方法中使用到了
+
+
+/*
 confLib.YXV_ConfInit(confHandlePtr)
-let confHandle = confHandlePtr.deref()
-
-let confHandlePtr_R = ref.alloc(YXV_ConfPtrPtr_R)
+let confHandle =libParamType.confHandle
+let confHandlePtr_R = libParamType.confHandlePtr_R
 let confHandle_R;
+*/
 
 
-const streamArray = []; 
+const streamArray = [];
 var url;
 let videoStr;
 let audioStr;
@@ -114,7 +141,7 @@ exports.mainStreamindex = function(){
 }
 exports.mainWinindex =function(){
 	return mainWinindex;
-} 
+}
 
 exports.setCurrentVideo = function(_videoStr){
 	currentVideo = _videoStr;
@@ -166,13 +193,13 @@ function avr_RemoveStreamAndWindow(streamIndex, winIndex) {
 				avr_reallyRemoveStream(streamIndex);
 			}, 5000); /* Really remove stream when don't use in 5 seconds, prevent student bug. */
 			loger.info('avr_removeStream:' + streamIndex);
-		}		
+		}
 	}
 }
 
 function readConf(param) {
-    var data = JSON.parse(fs.readFileSync(_confPath + "/conf.json").toString());
-    return data[param];
+	var data = JSON.parse(fs.readFileSync(_confPath + "/conf.json").toString());
+	return data[param];
 }
 
 function avr_FindOrAddStream(url) {
@@ -191,11 +218,11 @@ function avr_FindOrAddStream(url) {
 	srInfo.url = url;
 	srInfo.refCount = 1;
 	srInfo.rIndex = -1;
-	srInfo.index = newIndex; 
+	srInfo.index = newIndex;
 	g_streamArr[newIndex] = srInfo;
 
-    var delayMS = readConf("millisecond");
-    if (delayMS == null) delayMS = 200;
+	var delayMS = readConf("millisecond");
+	if (delayMS == null) delayMS = 200;
 	var addStreamResult = confLib.YXV_ConfAddStream(confHandle, srInfo.index, url, delayMS);
 	loger.info('hookWindow:YXV_ConfAddStream=streamindex-'+srInfo.index+':result-'+addStreamResult+':url-'+url+':delay-'+delayMS);
 
@@ -217,9 +244,9 @@ function avr_FindOrAddStream(url) {
   refCount -> refCount;
  */
 
- function avr_removeWindowByIndex(vwl, index, exited) {
+function avr_removeWindowByIndex(vwl, index, exited) {
 	var vwInfo = vwl[index];
-	
+
 	var wsCount = vwInfo.streamIndex.length;
 	for (var j = 0; j < wsCount; ++j)
 	{
@@ -238,14 +265,14 @@ function avr_FindOrAddStream(url) {
 		loger.info('avr_removeWindowByIndex:windowHide-'+index);
 		//setTimeout(function () {
 		//	avr_realDestroyWindow()
-		//}, 5000);		
+		//}, 5000);
 	} else {
 		vwInfo.wnd.destroy();
 		vwl.splice(index, 1);
 
 		loger.info('avr_removeWindowByIndex:windowDestroy-'+index);
 	}
- }
+}
 
 function avr_removeWindow(vwl, windowId, closeWindow) {
 	loger.info('avr_removeWindow:windowId-'+windowId);
@@ -267,7 +294,7 @@ function avr_removeWindow(vwl, windowId, closeWindow) {
 				if (g_streamArr[x] != null) streams_str += 'stream' + x + ":" + JSON.stringify(g_streamArr[x]);
 			}
 			loger.info(streams_str);
-			break;			
+			break;
 		}
 	}
 }
@@ -305,7 +332,7 @@ function avr_findRealBounds(mainWindow, l, t, w, h) {
 	if (isMax)
 	{
 		newBounds.x -= xOff*scale;
-		newBounds.y -= yOff*scale;		
+		newBounds.y -= yOff*scale;
 	}
 
 	newBounds.x = parseInt(Math.round(newBounds.x));
@@ -320,58 +347,58 @@ function avr_addWindow(mainWindow, l, t, w, h, windowId) {
 	var bounds = avr_findRealBounds(mainWindow, l, t, w, h);
 
 	var videoWindow = new BrowserWindow(
-      {
-        title:"childVideoWindow",
-        focusable:false,
-        frame:true,
-        autoHideMenuBar:true,
-        resizable:false,
-        moveable:false, 
-        closable:false,
-		minimizable:false,
-		maximizable:false,
-        parent:mainWindow,
-        modal:false,
-        transparent:false, 
-        backgroundColor:"#000000", 
-        webPreferences: {
-           plugins: true,
-           preload: path.join(__dirname, 'res/js', 'preload.js'),
-        }, 
-        show:false
-      });
+		{
+			title:"childVideoWindow",
+			focusable:false,
+			frame:true,
+			autoHideMenuBar:true,
+			resizable:false,
+			moveable:false,
+			closable:false,
+			minimizable:false,
+			maximizable:false,
+			parent:mainWindow,
+			modal:false,
+			transparent:false,
+			backgroundColor:"#000000",
+			webPreferences: {
+				plugins: true,
+				preload: path.join(__dirname, 'res/js', 'preload.js'),
+			},
+			show:false
+		});
 
 	var url2 = urllib.format({
-      pathname: path.join(__dirname, 'view_complex/html/video.html'),
-      protocol: 'file:',
-      slashes: true
-    });
+		pathname: path.join(__dirname, 'view_complex/html/video.html'),
+		protocol: 'file:',
+		slashes: true
+	});
 	videoWindow.setBounds(bounds);
 	videoWindow.on('ready-to-show', function () {
 		videoWindow.show();
 	});
-    videoWindow.loadURL(url2 + "?windowId=" + windowId);
-    // videoWindow.openDevTools();
-    newVW.wnd = videoWindow;
-    newVW.parent = mainWindow;
-    newVW.l = l;
-    newVW.t = t;
-    newVW.w = w;
-    newVW.h = h;
+	videoWindow.loadURL(url2 + "?windowId=" + windowId);
+	// videoWindow.openDevTools();
+	newVW.wnd = videoWindow;
+	newVW.parent = mainWindow;
+	newVW.l = l;
+	newVW.t = t;
+	newVW.w = w;
+	newVW.h = h;
 
-    newVW.streamIndex = Array();
-    newVW.winIndex = Array();
+	newVW.streamIndex = Array();
+	newVW.winIndex = Array();
 
-    for (var i = 0; i < WIN_MAX_STREAMS; ++i) {
-    	newVW.streamIndex[i] = -1;
-    	newVW.winIndex[i] = -1;
-    }
-    newVW.refCount = 1;
-    newVW.windowId = windowId;
-    newVW.using = true;
-    newVW.isCanvas = false;
+	for (var i = 0; i < WIN_MAX_STREAMS; ++i) {
+		newVW.streamIndex[i] = -1;
+		newVW.winIndex[i] = -1;
+	}
+	newVW.refCount = 1;
+	newVW.windowId = windowId;
+	newVW.using = true;
+	newVW.isCanvas = false;
 
-    return newVW;
+	return newVW;
 }
 
 exports.moveChildWindows = function(mainBounds, vwl)
@@ -393,7 +420,7 @@ exports.moveChildWindows = function(mainBounds, vwl)
 exports.hookWindow = function (mainWindow,vwl,ltwhArrays,urls,snList,noVolList,clickWindowId)
 {
 	if(!urls[0]) return;
-   	loger.info('hookWindow:ltwhArrays='+ltwhArrays+';urls='+urls+';snList='+snList+';noVolList='+noVolList + ";windowId"+clickWindowId);
+	loger.info('hookWindow:ltwhArrays='+ltwhArrays+';urls='+urls+';snList='+snList+';noVolList='+noVolList + ";windowId"+clickWindowId);
 	var pipJson = initPips(ltwhArrays);
 	loger.info("hookWindow:pipJson="+JSON.stringify(pipJson));
 
@@ -410,7 +437,7 @@ exports.hookWindow = function (mainWindow,vwl,ltwhArrays,urls,snList,noVolList,c
 	{
 		loger.info("Hook window already exists!using-"+vwNew.using + "windowId"+clickWindowId);
 		if (vwNew.using) {
-			return;	
+			return;
 		}
 		vwNew.windowId = clickWindowId;
 		var bounds = mainWindow.getBounds();
@@ -430,7 +457,7 @@ exports.hookWindow = function (mainWindow,vwl,ltwhArrays,urls,snList,noVolList,c
 
 	var vwIndex0 = vwl.length * 16;
 	var winIndexList = Array();
-    vwl[vwl.length] = vwNew;
+	vwl[vwl.length] = vwNew;
 
 	let hwnd = vwNew.wnd.getNativeWindowHandle() //获取窗口句柄。
 
@@ -441,7 +468,7 @@ exports.hookWindow = function (mainWindow,vwl,ltwhArrays,urls,snList,noVolList,c
 
 		var retWinIndex1 = new Buffer(4);
 		var pip_result = confLib.YXV_ConfAddDisplay2(confHandle, vwNew.streamIndex[i+1], 0, pipJson.pips[i], hwnd, retWinIndex1);
-	 	loger.info('hookWindow:pip_result=streamindex-'+vwNew.streamIndex[i+1]+':ltrb-'+pipJson.pips[i]+':hwnd-'+hwnd+':result-'+pip_result);
+		loger.info('hookWindow:pip_result=streamindex-'+vwNew.streamIndex[i+1]+':ltrb-'+pipJson.pips[i]+':hwnd-'+hwnd+':result-'+pip_result);
 		vwNew.winIndex[i+1] = retWinIndex1.readUInt32LE(0);
 		winIndexList[i + 1] = "" + clickWindowId + "|" + vwNew.winIndex[i+1];
 
@@ -449,14 +476,14 @@ exports.hookWindow = function (mainWindow,vwl,ltwhArrays,urls,snList,noVolList,c
 		confLib.YXV_ConfSetStreamVol(confHandle, vwNew.streamIndex[i+1], vol);
 		++vwNew.refCount;
 	}
-	
+
 	streamIndexArray[0] = avr_FindOrAddStream(urls[0]);
 	vwNew.streamIndex[0] = streamIndexArray[0];
 
 	var retWinIndex1 = new Buffer(4);
 	var addDisplay2Result = confLib.YXV_ConfAddDisplay2(confHandle, vwNew.streamIndex[0], 0, pipJson.ltrb, hwnd, retWinIndex1);
 	loger.info('hookWindow:YXV_ConfAddDisplay2=streamindex-'+vwNew.streamIndex[0]+':ltrb-'+pipJson.ltrb+':hwnd-'+hwnd+':result-'+addDisplay2Result);
-	
+
 	vwNew.winIndex[0] = retWinIndex1.readUInt32LE(0);
 	winIndexList[0] = "" + clickWindowId + "|" + vwNew.winIndex[0];
 
@@ -476,7 +503,7 @@ exports.hookWindow = function (mainWindow,vwl,ltwhArrays,urls,snList,noVolList,c
 	// 	streamindexList.push(streamindex);
 	// 	loger.info('hookWindow:YXV_ConfAddStream=streamindex-'+streamindex+':result-'+addStreamResult);
 	// }
-	
+
 	// for (var i = 0; i < streamindexList.length; i++) {
 	// 	var vol = noVolList? noVolList[i] ? noVolList[i] : 0 : 0;
 	// 	var setStramVolResult = confLib.YXV_ConfSetStreamVol(confHandle,streamindexList[i],vol);
@@ -507,7 +534,7 @@ exports.moveWindow = function (mainWindow,vwl,ltwhArrays,streamindexList,wininde
 		loger.info('moveWindow:setStramVolResult=streamindex-'+streamindexList[i]+':vol-'+vol+':result-'+setStramVolResult);
 	}
 
-   	loger.info('moveWindow:ltwhArrays='+ltwhArrays+';winindexList='+winindexList+';streamindexList='+streamindexList);
+	loger.info('moveWindow:ltwhArrays='+ltwhArrays+';winindexList='+winindexList+';streamindexList='+streamindexList);
 	var pipJson = initPips(ltwhArrays);
 
 	var winArr = [];
@@ -516,7 +543,7 @@ exports.moveWindow = function (mainWindow,vwl,ltwhArrays,streamindexList,wininde
 
 	var windowId = winArr[0], winSeq = parseInt(winArr[1]);
 	loger.info("moveWindow:pipJson="+JSON.stringify(pipJson)+",windowId="+windowId);
-	
+
 
 	var vwInfo = avr_findWindow(vwl, windowId);
 	var ltrb = pipJson.ltrb.split(',');
@@ -535,7 +562,7 @@ exports.moveWindow = function (mainWindow,vwl,ltwhArrays,streamindexList,wininde
 	var bounds = avr_findRealBounds(mainWindow, pipJson.ltrbInfo[0], pipJson.ltrbInfo[1], pipJson.ltrbInfo[2], pipJson.ltrbInfo[3]);
 
 	vwInfo.wnd.setBounds(bounds);
-	
+
 	var moveDisplay2Result = confLib.YXV_ConfMoveDisplay2(confHandle, streamindexList[0], winSeq,pipJson.ltrb);
 	loger.info('moveWindow:YXV_ConfMoveDisplay2=streamindex-'+streamindexList[0]+':winindex-'+winSeq+':lerb-'+pipJson.ltrb+':result-'+moveDisplay2Result);
 	var pips = pipJson.pips;
@@ -567,7 +594,7 @@ exports.changeVolWindow = function (thisWindow,streamindexList,volList)
 exports.replaceStream = function (thisWindow,vwl,divList,streamindexList,winindexList,volList,newUrls)
 {
 	loger.info('replaceStream:init=divList-'+divList+';streamindex-'+streamindexList+':winIndex-'+winindexList+':volList-'+volList+':newUrls-'+newUrls);
-	
+
 	for (var i = 0; i < MAX_STREAMS; ++i) {
 		if (g_streamArr[i] != null) {
 			var setStramVolResult = confLib.YXV_ConfSetStreamVol(confHandle,i,0);
@@ -580,7 +607,7 @@ exports.replaceStream = function (thisWindow,vwl,divList,streamindexList,wininde
 	var flag = true;
 	for (var i = 0; i < divList.length; i++) {
 
-		
+
 
 		var winArr = [];
 		if (winindexList[i] != null) winArr = winindexList[i].split("|");
@@ -596,7 +623,7 @@ exports.replaceStream = function (thisWindow,vwl,divList,streamindexList,wininde
 				confLib.YXV_ConfRemoveDisplay(confHandle, streamindexList[i], winSeq);
 			}
 		}else{
-			
+
 			if(!vwInfo.wnd.isVisible()){
 				/*vwInfo.wnd.show();*/
 				vwInfo.refCount = 1;
@@ -657,7 +684,7 @@ exports.copyWindow = function (mainWindow,ltwhArrays,streamindex,winindex)
 		var removeDisplayResult = confLib.YXV_ConfRemoveDisplay(confHandle, mainStreamindex, mainWinindex);
 		loger.info('copyWindow:YXV_ConfRemoveDisplay=mainStreamindex-'+mainStreamindex+':mainWinindex-'+mainWinindex+':result-'+removeDisplayResult);
 	}
-	
+
 	let hwnd = mainWindow.getNativeWindowHandle() //获取窗口句柄。
 	var retWinIndex1 = new Buffer(4);
 	var addDisplay2Result = confLib.YXV_ConfAddDisplay2(confHandle, streamindex, 0,pipJson.ltrb, hwnd, retWinIndex1);
@@ -737,7 +764,7 @@ function openStream(mainWindow,left,top,width,height){
 
 	var videoUris = getVideos();
 	var audioUris = getAudios();
-	
+
 	// console.log("audioUris----:"+audioUris);
 	if(videoUris.size == 0){
 		result = {
@@ -758,26 +785,26 @@ function openStream(mainWindow,left,top,width,height){
 		webContents.send('video', result);
 		return ;
 	}
-	
+
 	var result;
 	var retWinIndex3 = new Buffer(4);
 	let hwnd = mainWindow.getNativeWindowHandle() //获取窗口句柄。
-	
+
 	var streamindex = getStreamIndex();
 	if(currentVideo) {
 		videoKey = currentVideo;
 	} else {
 		videoUris.forEach(function (item, key, mapObj) {
-		    videoKey = key;
-		    return;
+			videoKey = key;
+			return;
 		});
 	}
 	if(currentAideo){
 		audioKey = currentAideo;
 	}else{
 		audioUris.forEach(function (item, key, mapObj) {
-		    audioKey = key;
-		    return;
+			audioKey = key;
+			return;
 		});
 	}
 	var x = confLib.YXV_ConfAddLocalStream(confHandle,streamindex, videoKey,audioKey,0,0);
@@ -840,7 +867,7 @@ function getAudios(){
 
 function sendStream(mainWindow,streamindex,room_id){
 	var webContents = mainWindow.webContents;
-	var uuid =  UUID.v1();  
+	var uuid =  UUID.v1();
 	// console.log("uuid--------------------"+uuid+"--------random="+Math.floor(Math.random() * 999999));
 	if(!url){
 		url = config.RTMP_SERVER+room_id+"_"+uuid;
@@ -903,13 +930,13 @@ exports.setAce = function(win,flag){
 			webContents.send('video', result);
 			return ;
 		}
-		
+
 		var result;
 		var streamindex = getStreamIndex();
 		var thisAudioKey;
 		audioUris.forEach(function (item, key, mapObj) {
-		    thisAudioKey = key;
-		    return;
+			thisAudioKey = key;
+			return;
 		});
 		var x = confLib.YXV_ConfAddLocalStream(confHandle,streamindex, '',thisAudioKey,0,0);
 		if(x != 0){
@@ -951,13 +978,13 @@ exports.openAudio = function(win){
 			webContents.send('video', result);
 			return ;
 		}
-		
+
 		var result;
 		var streamindex = getStreamIndex();
 		var thisAudioKey;
 		audioUris.forEach(function (item, key, mapObj) {
-		    thisAudioKey = key;
-		    return;
+			thisAudioKey = key;
+			return;
 		});
 		var x = confLib.YXV_ConfAddLocalStream(confHandle,streamindex, '',thisAudioKey,0,0);
 		if(x != 0){
@@ -980,7 +1007,7 @@ exports.openAudio = function(win){
 
 		myAudioStreamindex = streamindex;
 	}
-	
+
 
 	interval_int = setInterval(function(){
 		// console.log("---------------------------setInterval-----------111---------------------------");
@@ -1000,7 +1027,7 @@ exports.openAudio = function(win){
 		}else{
 			return;
 		}
-		
+
 	},20)
 
 	// console.log("------------------openAudio---------------------------:"+streamindex)
@@ -1017,7 +1044,7 @@ exports.closeAudio = function (win,streamindex)
 			console.log("222222222222222222222222222222222222222222222222")
 			return;
 		}
-		
+
 	}
 	console.log("------------------closeAudio---------------------------:"+streamindex)
 	// confLib.YXV_ConfRemoveStream(confHandle,streamindex)
@@ -1053,19 +1080,20 @@ exports.startRec =function(win,width,height,mianStrIndex){
 		dirpath = path.join(__dirname,'/temp');
 	}
 	if (!fs.existsSync(dirpath)) {
-        // fs.mkdirSync(dirpath)
-        mkdirsSync(dirpath)
-    } 
+		// fs.mkdirSync(dirpath)
+		mkdirsSync(dirpath)
+	}
 	loger.info('startRec:dirpath-'+dirpath);
 	var open_result = confLib.YXV_ConfROpen(confHandle,global.canRec,width,height,width*height*3,20,2,48000,128000,confHandlePtr_R);
 	loger.info('startRec:YXV_ConfROpen=width-'+width+':height-'+height+':result-'+open_result);
 	var is_ok = true;
 	if(open_result == 0){
-		confHandle_R = confHandlePtr_R.deref();
-
-		for (var i = 0; i < MAX_STREAMS; i++) {
+		// confHandle_R = confHandlePtr_R.deref();
+		cusGlobalParam.g_confHandle_R_Set(confHandlePtr_R.deref())
+		;		for (var i = 0; i < MAX_STREAMS; i++) {
 			if (g_streamArr[i] != null) {
-				var addStream_result = confLib.YXV_ConfRAddStream(confHandle_R,i,retWinIndex1);
+				// var addStream_result = confLib.YXV_ConfRAddStream(confHandle_R,i,retWinIndex1);
+				var addStream_result = confLib.YXV_ConfRAddStream(cusGlobalParam.g_confHandle_R_Get(),i,retWinIndex1);
 				loger.info('startRec:YXV_ConfRAddStream=streamindex-'+i+':result-'+addStream_result);
 				var winindex = retWinIndex1.readUInt32LE(0);
 				res_index_list.push(i+"_"+winindex);
@@ -1073,33 +1101,35 @@ exports.startRec =function(win,width,height,mianStrIndex){
 				g_streamArr[i].rIndex = winindex;
 			}
 		}
-		confLib.YXV_ConfRSwitchMain(confHandle_R,mianStrIndex);
+		// confLib.YXV_ConfRSwitchMain(confHandle_R,mianStrIndex);
+		confLib.YXV_ConfRSwitchMain(cusGlobalParam.g_confHandle_R_Get(),mianStrIndex);
 	}
 
 	//生成文件夹但没有录制文件得问题
 	// if(is_ok){
-		var startRes_result = confLib.YXV_ConfRStartRec(confHandle_R,true,dirpath);
-		loger.info('startRec:YXV_ConfRStartRec=dirpath-'+dirpath+':result-'+startRes_result);
+	// 	var startRes_result = confLib.YXV_ConfRStartRec(confHandle_R,true,dirpath);
+	var startRes_result = confLib.YXV_ConfRStartRec(cusGlobalParam.g_confHandle_R_Get(),true,dirpath);
+	loger.info('startRec:YXV_ConfRStartRec=dirpath-'+dirpath+':result-'+startRes_result);
 	// }
-	
+
 	webContents.send('startRec', filePath);
 
-    var starttime = process.uptime()*1000;
-    time_interval = setInterval(function () {
-      var nowtime = process.uptime()*1000;
-      var time = nowtime - starttime;
-      var hour = parseInt(time / 1000 / 60 / 60 % 24) < 10 ? '0'+ parseInt(time / 1000 / 60 / 60 % 24) : parseInt(time / 1000 / 60 / 60 % 24);
-      var minute = parseInt(time / 1000 / 60 % 60) <10 ? '0'+ parseInt(time / 1000 / 60 % 60) : parseInt(time / 1000 / 60 % 60);
-      var seconds = parseInt(time / 1000 % 60) <10 ? '0'+parseInt(time / 1000 % 60):parseInt(time / 1000 % 60);
-      // $('#'+_id).html(hour + ":" + minute + ":" + seconds );
-      webContents.send('recTime', hour + ":" + minute + ":" + seconds );
-    }, 1000)
+	var starttime = process.uptime()*1000;
+	time_interval = setInterval(function () {
+		var nowtime = process.uptime()*1000;
+		var time = nowtime - starttime;
+		var hour = parseInt(time / 1000 / 60 / 60 % 24) < 10 ? '0'+ parseInt(time / 1000 / 60 / 60 % 24) : parseInt(time / 1000 / 60 / 60 % 24);
+		var minute = parseInt(time / 1000 / 60 % 60) <10 ? '0'+ parseInt(time / 1000 / 60 % 60) : parseInt(time / 1000 / 60 % 60);
+		var seconds = parseInt(time / 1000 % 60) <10 ? '0'+parseInt(time / 1000 % 60):parseInt(time / 1000 % 60);
+		// $('#'+_id).html(hour + ":" + minute + ":" + seconds );
+		webContents.send('recTime', hour + ":" + minute + ":" + seconds );
+	}, 1000)
 
 	global.isRec = true;
 }
 
 let global_pip_caller = null;
-var global_student_up = null; 
+var global_student_up = null;
 exports.stopRec =function(win){
 	loger.info('stopRec');
 
@@ -1107,20 +1137,24 @@ exports.stopRec =function(win){
 		clearTimeout(global_pip_caller);
 		global_pip_caller = null;
 	}
-	
+
 	var webContents = win.webContents;
 	clearInterval(time_interval);
-	var stopRecResult = confLib.YXV_ConfRStopRec(confHandle_R);
-	loger.info('stopRec:YXV_ConfRStopRec=confHandle_R-'+confHandle_R+':result-'+stopRecResult);
-	var rCloseResult = confLib.YXV_ConfRClose(confHandle_R);
-	loger.info('stopRec:YXV_ConfRClose=confHandle_R-'+confHandle_R+':result-'+rCloseResult);
+	// var stopRecResult = confLib.YXV_ConfRStopRec(confHandle_R);
+	var stopRecResult = confLib.YXV_ConfRStopRec(cusGlobalParam.g_confHandle_R_Get());
+	// loger.info('stopRec:YXV_ConfRStopRec=confHandle_R-'+confHandle_R+':result-'+stopRecResult);
+	loger.info('stopRec:YXV_ConfRStopRec=confHandle_R-'+cusGlobalParam.g_confHandle_R_Get()+':result-'+stopRecResult);
+	// var rCloseResult = confLib.YXV_ConfRClose(confHandle_R);
+	var rCloseResult = confLib.YXV_ConfRClose(cusGlobalParam.g_confHandle_R_Get());
+	// loger.info('stopRec:YXV_ConfRClose=confHandle_R-'+confHandle_R+':result-'+rCloseResult);
+	loger.info('stopRec:YXV_ConfRClose=confHandle_R-'+cusGlobalParam.g_confHandle_R_Get()+':result-'+rCloseResult);
 
 	for (var i = 0; i < MAX_STREAMS; i++) {
 		if (g_streamArr[i] != null) {
 			if (g_streamArr[i].refCount == 0) {
 				avr_reallyRemoveStream(i);
 			} else {
-				g_streamArr[i].rIndex = -1;				
+				g_streamArr[i].rIndex = -1;
 			}
 		}
 	}
@@ -1148,7 +1182,7 @@ exports.switchPip = function (main_stream_index,fyr_stream_index){
 	if (global_student_up == null) {
 		global_student_up = readConf('stuUp');
 		if (global_student_up == null) global_student_up = 5000;
-	}	
+	}
 
 	var firstPipIsBig = global_student_up > 0;
 	for (var i = 0; i < res_index_list.length; i++) {
@@ -1163,11 +1197,13 @@ exports.switchPip = function (main_stream_index,fyr_stream_index){
 		}
 	}
 	setTimeout(function(){
-		var switch_result = confLib.YXV_ConfRSwitchPip(confHandle_R,param);
+		// var switch_result = confLib.YXV_ConfRSwitchPip(confHandle_R,param);
+		var switch_result = confLib.YXV_ConfRSwitchPip(cusGlobalParam.g_confHandle_R_Get(),param);
 		loger.info('switchPip:YXV_ConfRSwitchPip=param-'+param+':result-'+switch_result);
 		if (firstPipIsBig) {
 			global_pip_caller = setTimeout(function () {
-				switch_result = confLib.YXV_ConfRSwitchPip(confHandle_R,param2);
+				// switch_result = confLib.YXV_ConfRSwitchPip(confHandle_R,param2);
+				switch_result = confLib.YXV_ConfRSwitchPip(cusGlobalParam.g_confHandle_R_Get(),param2);
 				loger.info('switchPip:YXV_ConfRSwitchPip_tosmall=param-'+param2+':result-'+switch_result);
 			}, global_student_up);
 		}
@@ -1182,13 +1218,14 @@ exports.switchMain = function (main_stream_index){
 		clearTimeout(global_pip_caller);
 		global_pip_caller = null;
 	}
-	
+
 	for (var i = 0; i < res_index_list.length; i++) {
 		var str = res_index_list[i].split("_");
 		if(str[0] == main_stream_index){
-			
+
 			setTimeout(function(){
-				var switch_result = confLib.YXV_ConfRSwitchMain(confHandle_R,str[1]);
+				// var switch_result = confLib.YXV_ConfRSwitchMain(confHandle_R,str[1]);
+				var switch_result = confLib.YXV_ConfRSwitchMain(cusGlobalParam.g_confHandle_R_Get(),str[1]);
 				loger.info('switchPip:YXV_ConfRSwitchMain=param-'+str[1]+':result-'+switch_result);
 			},200-40);
 			break;
@@ -1218,91 +1255,91 @@ exports.uploadFile =function(win,_filePath,type,fileNo){
 			}else{
 				_path = config.LESSON_UPLOAD+'?fileName=lessonFile&lessonId='+global.lessonId+'&teacherId='+global.teacherId+'&tken='+global.token;
 			}
-			 var options = {
-		    		host: config.HOST,
-		    		port: config.PORT,
-		    		path: _path,
-		    		method: 'POST'
-			    };
-		   
-		    var reqHttps = http.request(options, function(resHttps) {
-		    	console.log("statusCode: ", resHttps.statusCode);
-		    	console.log("headers: ", resHttps.headers);
-		    	var json=''; 
-		    	resHttps.on('data', function(data) {
+			var options = {
+				host: config.HOST,
+				port: config.PORT,
+				path: _path,
+				method: 'POST'
+			};
+
+			var reqHttps = http.request(options, function(resHttps) {
+				console.log("statusCode: ", resHttps.statusCode);
+				console.log("headers: ", resHttps.headers);
+				var json='';
+				resHttps.on('data', function(data) {
 					console.log("body:"+data);
-					json+=data;  
-					 webContents.send('uploadFile', json);
+					json+=data;
+					webContents.send('uploadFile', json);
 				});
-		     
-		    });
-		    var payload = '--' + boundaryKey + '\r\n'
-		    + 'Content-Type: video/mpeg4\r\n' 
-		    + 'Content-Disposition: form-data; name="lessonFile"; filename="'+fileName+'"\r\n'
-		    + 'Content-Transfer-Encoding: binary\r\n\r\n';
-		    console.log(payload.length);
-		    var enddata  = '\r\n--' + boundaryKey + '--';
-		    console.log('enddata:'+enddata.length);
-		    reqHttps.setHeader('Content-Type', 'multipart/form-data; boundary='+boundaryKey+'');
 
-		    
-		    reqHttps.write(payload);
-		    
-		    var fileStream = fs.createReadStream(_filePath, { bufferSize: 4 * 1024 });
-		    fileStream.pipe(reqHttps, {end: false});
+			});
+			var payload = '--' + boundaryKey + '\r\n'
+				+ 'Content-Type: video/mpeg4\r\n'
+				+ 'Content-Disposition: form-data; name="lessonFile"; filename="'+fileName+'"\r\n'
+				+ 'Content-Transfer-Encoding: binary\r\n\r\n';
+			console.log(payload.length);
+			var enddata  = '\r\n--' + boundaryKey + '--';
+			console.log('enddata:'+enddata.length);
+			reqHttps.setHeader('Content-Type', 'multipart/form-data; boundary='+boundaryKey+'');
 
-		    var stat = fs.statSync(_filePath);
+
+			reqHttps.write(payload);
+
+			var fileStream = fs.createReadStream(_filePath, { bufferSize: 4 * 1024 });
+			fileStream.pipe(reqHttps, {end: false});
+
+			var stat = fs.statSync(_filePath);
 			var totalSize = stat.size;
 			var passedLength = 0;
 			var lastSize = 0;
 			var startTime = Date.now();
 			var fs_interval;
-		    fileStream.on('data', function (chunk) {
-			     passedLength += chunk.length;
+			fileStream.on('data', function (chunk) {
+				passedLength += chunk.length;
 			});
 			fs_interval = setInterval(function show() {
-				  var percent = Math.ceil((passedLength / totalSize) * 100);
-				  var size = Math.ceil(passedLength / 1000);
-				  var diff = size - lastSize;
-				  lastSize = size;
-				  var _result = {
-				  	"status":"uploadding",
-				  	"totleSize":Math.ceil(totalSize/1000000),
-				  	"percent":percent,
-				  	"completeSize":size/1000,
-				  	"speed":Math.ceil(diff),
-				  	"timeForUsed":(Date.now()-startTime)/1000,
-				  	"fileNo":fileNo
-				  }
-				  webContents.send('uploadFile',_result);
-				}, 1000);
-
-		    fileStream.on('end', function() {
-		    	reqHttps.end(enddata); 
-		    	webContents.send('uploadFile', 'file upload finished!');
-		    	global.is_upload = false;
-		    	var endTime = Date.now();
-		    	var _result = {
-				  	"status":"uploaded",
-				  	"totleSize":Math.ceil(totalSize/1000000),
-				  	"completeSize":Math.ceil(totalSize/1000000),
-				  	"timeForUsed":(endTime - startTime) / 1000,
-				  	"fileNo":fileNo
-				  }
+				var percent = Math.ceil((passedLength / totalSize) * 100);
+				var size = Math.ceil(passedLength / 1000);
+				var diff = size - lastSize;
+				lastSize = size;
+				var _result = {
+					"status":"uploadding",
+					"totleSize":Math.ceil(totalSize/1000000),
+					"percent":percent,
+					"completeSize":size/1000,
+					"speed":Math.ceil(diff),
+					"timeForUsed":(Date.now()-startTime)/1000,
+					"fileNo":fileNo
+				}
 				webContents.send('uploadFile',_result);
-		    	if(fs_interval){
-		    		clearInterval(fs_interval);
-		    	}
-		    });
-		    
-		    reqHttps.on('error', function(e) {
-		    	webContents.send('uploadFile', e);
-		    	console.error("error:"+e);
-		    	global.is_upload = false;
-		    	if(fs_interval){
-		    		clearInterval(fs_interval);
-		    	}
-		    });
+			}, 1000);
+
+			fileStream.on('end', function() {
+				reqHttps.end(enddata);
+				webContents.send('uploadFile', 'file upload finished!');
+				global.is_upload = false;
+				var endTime = Date.now();
+				var _result = {
+					"status":"uploaded",
+					"totleSize":Math.ceil(totalSize/1000000),
+					"completeSize":Math.ceil(totalSize/1000000),
+					"timeForUsed":(endTime - startTime) / 1000,
+					"fileNo":fileNo
+				}
+				webContents.send('uploadFile',_result);
+				if(fs_interval){
+					clearInterval(fs_interval);
+				}
+			});
+
+			reqHttps.on('error', function(e) {
+				webContents.send('uploadFile', e);
+				console.error("error:"+e);
+				global.is_upload = false;
+				if(fs_interval){
+					clearInterval(fs_interval);
+				}
+			});
 		}
 	})
 }
@@ -1321,79 +1358,79 @@ function setFlagAndMil(win,flag,millisecond){
 }
 
 function writeConf(win,data) {
-    fs.writeFile(_confPath+ "/conf.json", JSON.stringify(data, null, "   "), function(err, data) {
-    	if(win !=null)
-    	{
+	fs.writeFile(_confPath+ "/conf.json", JSON.stringify(data, null, "   "), function(err, data) {
+		if(win !=null)
+		{
 			var webContents = win.webContents;
-	    	var _result;
-	    	if(err){
-	    		_result ={
-	    			'status':'error',
-	    			'msg':err
-	    		}
-	    	}else{
+			var _result;
+			if(err){
 				_result ={
-	    			'status':'ok',
-	    			'msg':''
-	    		}
-	    	}
+					'status':'error',
+					'msg':err
+				}
+			}else{
+				_result ={
+					'status':'ok',
+					'msg':''
+				}
+			}
 			webContents.send('writeConf',_result);
-    	}
-    	
-    })
+		}
+
+	})
 }
 
 function writeConffm(win,flag,millisecond) {
-    var data = JSON.parse(fs.readFileSync(_confPath + "/conf.json").toString());
-    data['flag'] = parseInt(flag);
-    data['millisecond'] = parseInt(millisecond);
-    writeConf(win,data);
+	var data = JSON.parse(fs.readFileSync(_confPath + "/conf.json").toString());
+	data['flag'] = parseInt(flag);
+	data['millisecond'] = parseInt(millisecond);
+	writeConf(win,data);
 }
 
 exports.changeFilePath = function(win,_filePath){
 	var data = JSON.parse(fs.readFileSync(_confPath + "/conf.json").toString());
-    data['filePath'] = _filePath;
-    writeConf(win,data);
-    global.filePath = true;
+	data['filePath'] = _filePath;
+	writeConf(win,data);
+	global.filePath = true;
 	var webContents = win.webContents;
 	webContents.send('changeFilePath', 'ok');
 }
 
 exports.fileListAdd = function(win,_filePath){
 	var data = JSON.parse(fs.readFileSync(_confPath + "/conf.json").toString());
-    var fileList = data.fileList;
-    var file = {'lessonId':global.lessonId,'path':_filePath,'status':'add','lessonName':global.lessonName};
-    fileList.push(file);
-    data['fileList'] = fileList;
-    writeConf(win,data);
+	var fileList = data.fileList;
+	var file = {'lessonId':global.lessonId,'path':_filePath,'status':'add','lessonName':global.lessonName};
+	fileList.push(file);
+	data['fileList'] = fileList;
+	writeConf(win,data);
 	var webContents = win.webContents;
 	webContents.send('changeFilePath', 'ok');
 }
 
 exports.fileListFinish = function(win,fileNo){
 	var data = JSON.parse(fs.readFileSync(_confPath + "/conf.json").toString());
-    var fileList = data.fileList;
-    for(var i=0;i<fileList.length;i++){
-    	if(fileList[i].path.indexOf(fileNo)>=0){
-    		fileList[i].status = 'finish';
-    		break;
-    	}
-    }
-    data['fileList'] = fileList;
-    writeConf(win,data);
+	var fileList = data.fileList;
+	for(var i=0;i<fileList.length;i++){
+		if(fileList[i].path.indexOf(fileNo)>=0){
+			fileList[i].status = 'finish';
+			break;
+		}
+	}
+	data['fileList'] = fileList;
+	writeConf(win,data);
 }
 
 exports.fileListRemove = function(win,fileNo){
 	var data = JSON.parse(fs.readFileSync(_confPath + "/conf.json").toString());
-    var fileList = data.fileList;
-    for(var i=0;i<fileList.length;i++){
-    	if(fileList[i].path.indexOf(fileNo)>=0){
-    		fileList.splice(i, 1); 
-    		break;
-    	}
-    }
-    data['fileList'] = fileList;
-    writeConf(win,data);
+	var fileList = data.fileList;
+	for(var i=0;i<fileList.length;i++){
+		if(fileList[i].path.indexOf(fileNo)>=0){
+			fileList.splice(i, 1);
+			break;
+		}
+	}
+	data['fileList'] = fileList;
+	writeConf(win,data);
 }
 
 exports.getFilePath = function(win){
@@ -1418,11 +1455,11 @@ exports.initFilePath = function(win){
 
 exports.createConf = function(callback)
 {
-	  if (!fs.existsSync(_confPath +"/conf.json")) {
-	  	if(!fs.existsSync(_confPath)){
+	if (!fs.existsSync(_confPath +"/conf.json")) {
+		if(!fs.existsSync(_confPath)){
 			mkdirsSync(_confPath);
-	  	}
-         var data ={
+		}
+		var data ={
 			"flag": null,
 			"millisecond": 200,
 			"host":"117.141.28.92",
@@ -1434,8 +1471,8 @@ exports.createConf = function(callback)
 			"userName":"",
 			"passWord":"",
 			"pip":0,
-   			"stuUp":0,
-   			"plan":"a",//a 通用型  b 黑板方案 
+			"stuUp":0,
+			"plan":"a",//a 通用型  b 黑板方案
 			"filePath": _confPath,
 			"fileList": [],
 			"status":"",//zp 主屏 fp 辅助屏
@@ -1453,12 +1490,12 @@ exports.createConf = function(callback)
 			"bitstream":1,
 			"nginxFilePath":""
 		}
-		
-	   fs.writeFileSync(_confPath+"/conf.json", JSON.stringify(data, null, "   "))
-	   	callback()
-       }else{
-       	callback()
-       }
+
+		fs.writeFileSync(_confPath+"/conf.json", JSON.stringify(data, null, "   "))
+		callback()
+	}else{
+		callback()
+	}
 
 }
 
@@ -1510,37 +1547,37 @@ function initPips(ltwhArrays){
 
 	var pipJson = {
 		ltrb : ltrb,
-		pips : pips, 
+		pips : pips,
 		ltrbInfo : ltrbInfo
 	};
 	return pipJson;
 }
 
-function mkdirsSync(dirpath, mode) { 
-    try
-    {
-        if (!fs.existsSync(dirpath)) {
-            let pathtmp;
-            dirpath.split(/[/\\]/).forEach(function (dirname) {  //这里指用/ 或\ 都可以分隔目录  如  linux的/usr/local/services   和windows的 d:\temp\aaaa
-                if (pathtmp) {
-                    pathtmp = path.join(pathtmp, dirname);
-                }
-                else {
-                    pathtmp = dirname;
-                }
-                if (!fs.existsSync(pathtmp)) {
-                    if (!fs.mkdirSync(pathtmp, mode)) {
-                        return false;
-                    }
-                }
-            });
-        }
-        return true; 
-    }catch(e)
-    {
+function mkdirsSync(dirpath, mode) {
+	try
+	{
+		if (!fs.existsSync(dirpath)) {
+			let pathtmp;
+			dirpath.split(/[/\\]/).forEach(function (dirname) {  //这里指用/ 或\ 都可以分隔目录  如  linux的/usr/local/services   和windows的 d:\temp\aaaa
+				if (pathtmp) {
+					pathtmp = path.join(pathtmp, dirname);
+				}
+				else {
+					pathtmp = dirname;
+				}
+				if (!fs.existsSync(pathtmp)) {
+					if (!fs.mkdirSync(pathtmp, mode)) {
+						return false;
+					}
+				}
+			});
+		}
+		return true;
+	}catch(e)
+	{
 		loger.info("create director fail! path=" + dirpath +" errorMsg:" + e);
-        return false;
-    }
+		return false;
+	}
 }
 
 

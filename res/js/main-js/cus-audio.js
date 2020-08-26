@@ -9,6 +9,12 @@ let myAudioStreamindex;
 let interval_int;
 
 
+const cusLibParamAfter=require('./cus-lib-param-type-after')
+
+let confHandle = cusLibParamAfter.confHandle//方法中使用到了
+let confHandlePtr_R = cusLibParamAfter.confHandlePtr_R //方法中使用到了
+
+
 var cusAudio={
 	setCurrentAideo :(_aideoStr)=>{
 		global.currentAideo = _aideoStr;

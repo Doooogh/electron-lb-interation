@@ -7,10 +7,13 @@ const {BrowserWindow}=require('electron')
 const path = require('path')
 const urllib = require('url');
 const cusGlobalParam=require('./cus-opreation-global-param')
+
+const cusLibParamAfter=require('./cus-lib-param-type-after')
+
 //常量
 const WIN_MAX_STREAMS=cusConst.WIN_MAX_STREAMS,
 	  MAX_STREAMS=cusConst.MAX_STREAMS;
-const confHandle=libParamType.confHandle;
+const confHandle=cusLibParamAfter.confHandle;
 var url;
 
 
@@ -66,13 +69,13 @@ var cusStreamWin={
                       loger.info(confLib);
                     if (delayMS == null) delayMS = 200;
                     loger.info("confLib.YXV_ConfAddStream  start-----------------------------------");
-                    loger.info(libParamType.confHandle);
+                    loger.info(cusLibParamAfter.confHandle);
                     loger.info( srInfo.index);
                     loger.info(url);
                     loger.info(delayMS);
                     loger.info("confLib.YXV_ConfAddStream   end-----------------------------------");
                     // 1 rtmp://play.easyhao.com/mp4/pcCode_8 200
-		              var addStreamResult = confLib.YXV_ConfAddStream(libParamType.confHandle, srInfo.index, url, delayMS);
+		              var addStreamResult = confLib.YXV_ConfAddStream(cusLibParamAfter.confHandle, srInfo.index, url, delayMS);
                     loger.info('hookWindow:YXV_ConfAddStream=streamindex-'+srInfo.index+':result-'+addStreamResult+':url-'+url+':delay-'+delayMS);
                     return srInfo.index;
 	},

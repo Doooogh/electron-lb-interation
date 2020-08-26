@@ -15,7 +15,6 @@ const md5 = require('md5-node')
 
 const ipcMain = electron.ipcMain
 // const renderer = require('./renderer.js')
-const renderer = require('./renderer1.js')
 
 //导入各模块js
 const cusMethod=require('./res/js/main-js/cus_method.js')
@@ -74,7 +73,7 @@ global.videoKey;
 var confData;
 let filePath;
 
-
+const ping = require('node-http-ping');
 
 
 
@@ -220,8 +219,8 @@ function createWindow (processParam) {
 	 
 	     mainWindow.on('move', function() {
 	        loger.info('mainWindow:move:');
-	        renderer.moveChildWindows(mainWindow.getBounds(), g_videoWindowList);
-	        // cusStreamWin.moveChildWindows(mainWindow.getBounds(), g_videoWindowList);
+	        // renderer.moveChildWindows(mainWindow.getBounds(), g_videoWindowList);
+	        cusStreamWin.moveChildWindows(mainWindow.getBounds(), g_videoWindowList);
 	     })
 	     mainWindow.on('resize',function(){
 	           console.log("-----------------resize---------------------");
@@ -316,7 +315,7 @@ function init(){
   
   var mcuIpAddress=confData.mcu;
   var rmanagerIpAddress=confData.rmanager;
-  loger.info("_______________检测网络状况______________________");
+  loger.info("_____________________________________");
     cusMethod.getServerStatus(mcuIpAddress,rmanagerIpAddress,()=>{
 		if(!global.mcuServerStatus&&global.rmanagerServerStatus){
 			if(num%10==0){   //每过二十秒弹出一次
@@ -466,8 +465,8 @@ function createSettingWindow(){
   // Emitted when the window is closed.
   settingWindow.on('closed', function () {
     settingWindow = null;
-    renderer.closeAudio(settingWindow,null);
-    // cusAudio.closeAudio(settingWindow,null);
+    // renderer.closeAudio(settingWindow,null);
+    cusAudio.closeAudio(settingWindow,null);
     var webContents = mainWindow.webContents;
     webContents.send('settingClose');
   })
@@ -618,8 +617,8 @@ function createToolsChildWindow(){
       toolsChildWindow.show()
     })*/
     var viewPath = 'view_complex/html/tools_child.html';
-    var taskBarInfoResult = renderer.YXV_ConfGetTaskBarInfo();
-    // var taskBarInfoResult = cusSystem.YXV_ConfGetTaskBarInfo();
+    // var taskBarInfoResult = renderer.YXV_ConfGetTaskBarInfo();
+    var taskBarInfoResult = cusSystem.YXV_ConfGetTaskBarInfo();
     toolsChildWindow.loadURL(url.format({
       pathname: path.join(__dirname, viewPath),
       protocol: 'file:',
@@ -827,8 +826,8 @@ function initInnerHd(_cjson){
   mainWindow.on('move', function() {
      loger.info('mainWindow:move:');
      // loger.info(g_videoWindowList);
-     renderer.moveChildWindows(mainWindow.getBounds(), g_videoWindowList);
-     // cusStreamWin.moveChildWindows(mainWindow.getBounds(), g_videoWindowList);
+     // renderer.moveChildWindows(mainWindow.getBounds(), g_videoWindowList);
+     cusStreamWin.moveChildWindows(mainWindow.getBounds(), g_videoWindowList);
   })
  /* mainWindow.on("restore", function(event){
     if(event){
@@ -864,8 +863,8 @@ function initInnerHd(_cjson){
       }
     }
 
-    renderer.removeAllWindow(mainWindow,g_videoWindowList);
-    // cusStreamWin.removeAllWindow(mainWindow,g_videoWindowList);
+    // renderer.removeAllWindow(mainWindow,g_videoWindowList);
+    cusStreamWin.removeAllWindow(mainWindow,g_videoWindowList);
     var allWins = BrowserWindow.getAllWindows();
     loger.info("allWins:"+allWins);
     for (var i = 0; i < allWins.length; i++) {
@@ -890,8 +889,8 @@ function initInnerHd(_cjson){
     createErrorWindow();
   }
   //createMsgWindow();
-  global.filePath = renderer.initFilePath(mainWindow);
-  // global.filePath = cusSystem.initFilePath(mainWindow);
+  // global.filePath = renderer.initFilePath(mainWindow);
+  global.filePath = cusSystem.initFilePath(mainWindow);
 }
 
 
@@ -927,16 +926,16 @@ function initTrayIcon() {
                   var regStr = '\\HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run';
                   var key = 'interation';
                   var val = '';
-                  renderer.YXV_ConfWriteRegistry(regStr,key,val);
-                  // cusSystem.YXV_ConfWriteRegistry(regStr,key,val);
+                  // renderer.YXV_ConfWriteRegistry(regStr,key,val);
+                  cusSystem.YXV_ConfWriteRegistry(regStr,key,val);
                   menuItem.checked = false;
                   datas=[false];
                 }else{
                   var regStr = '\\HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run';
                   var key = 'interation';
                   var val = app.getPath('exe');
-                  renderer.YXV_ConfWriteRegistry(regStr,key,val);
-                  // cusSystem.YXV_ConfWriteRegistry(regStr,key,val);
+                  // renderer.YXV_ConfWriteRegistry(regStr,key,val);
+                  cusSystem.YXV_ConfWriteRegistry(regStr,key,val);
                   menuItem.checked = true;
                   datas=[true];
                 }
@@ -1058,8 +1057,8 @@ app.on('ready', function(event){
      y = global.externalDisplay.bounds.height
   }
 
-  renderer.createConf(function(){
-  // cusSystem.createConf(function(){
+  // renderer.createConf(function(){
+  cusSystem.createConf(function(){
     init();
 
   });
@@ -1105,8 +1104,8 @@ app.on('activate', function () {
 
 function getTaskBarInfo(win){
   setInterval(function(){
-    var taskBarInfoResult = renderer.YXV_ConfGetTaskBarInfo();
-    // var taskBarInfoResult = cusSystem.YXV_ConfGetTaskBarInfo();
+    // var taskBarInfoResult = renderer.YXV_ConfGetTaskBarInfo();
+    var taskBarInfoResult = cusSystem.YXV_ConfGetTaskBarInfo();
     var width = taskBarInfoResult.width;
     var height = taskBarInfoResult.height;
     var position = taskBarInfoResult.position;
@@ -1118,52 +1117,52 @@ function getTaskBarInfo(win){
 
 
 ipcMain.on('hookWindow',function(event,ltwhArrays,urls,snList,noVolList,windowId){
-  renderer.hookWindow(mainWindow,g_videoWindowList,ltwhArrays,urls,snList,noVolList,windowId);
-  // cusStreamWin.hookWindow(mainWindow,g_videoWindowList,ltwhArrays,urls,snList,noVolList,windowId);
+  // renderer.hookWindow(mainWindow,g_videoWindowList,ltwhArrays,urls,snList,noVolList,windowId);
+  cusStreamWin.hookWindow(mainWindow,g_videoWindowList,ltwhArrays,urls,snList,noVolList,windowId);
 });
 
 ipcMain.on('moveWindow',function(event,ltwhArrays,streamindexList,winindexList,noVolList){
 // /*  var ltwhArrays = new Array();
 //  ltwhArrays.push(left,top,width,height);*/
-   renderer.moveWindow(mainWindow,g_videoWindowList,ltwhArrays,streamindexList,winindexList,noVolList);
-//     cusStreamWin.moveWindow(mainWindow,g_videoWindowList,ltwhArrays,streamindexList,winindexList,noVolList);
+//    renderer.moveWindow(mainWindow,g_videoWindowList,ltwhArrays,streamindexList,winindexList,noVolList);
+    cusStreamWin.moveWindow(mainWindow,g_videoWindowList,ltwhArrays,streamindexList,winindexList,noVolList);
 });
 
 ipcMain.on('changeVolWindow',function(event,streamindexList,noVolList){
-  renderer.changeVolWindow(mainWindow,streamindexList,noVolList);
-  //   cusStreamWin.changeVolWindow(mainWindow,streamindexList,noVolList);
+  // renderer.changeVolWindow(mainWindow,streamindexList,noVolList);
+    cusStreamWin.changeVolWindow(mainWindow,streamindexList,noVolList);
 });
 
 ipcMain.on('manege_hookWindow',function(event,ltwhArrays,urls,snList,noVolList,windowId){
-  renderer.hookWindow(initSetWindow,g_videoWindowList,ltwhArrays,urls,snList,noVolList,windowId);
-  //   cusStreamWin.hookWindow(initSetWindow,g_videoWindowList,ltwhArrays,urls,snList,noVolList,windowId);
+  // renderer.hookWindow(initSetWindow,g_videoWindowList,ltwhArrays,urls,snList,noVolList,windowId);
+    cusStreamWin.hookWindow(initSetWindow,g_videoWindowList,ltwhArrays,urls,snList,noVolList,windowId);
 });
 
 ipcMain.on('manege_moveWindow',function(event,ltwhArrays,streamindexList,winindexList,noVolList){
 /*  var ltwhArrays = new Array();
   ltwhArrays.push(left,top,width,height);*/
-   renderer.moveWindow(initSetWindow,g_videoWindowList,ltwhArrays,streamindexList,winindexList,noVolList);
-    // cusStreamWin.moveWindow(initSetWindow,g_videoWindowList,ltwhArrays,streamindexList,winindexList,noVolList);
+   // renderer.moveWindow(initSetWindow,g_videoWindowList,ltwhArrays,streamindexList,winindexList,noVolList);
+    cusStreamWin.moveWindow(initSetWindow,g_videoWindowList,ltwhArrays,streamindexList,winindexList,noVolList);
 });
 
 ipcMain.on('removeWindow',function(event,sn,streamindex,winindex){
-  renderer.removeWindow(mainWindow,g_videoWindowList,sn,streamindex,winindex);
-    // cusStreamWin.removeWindow(mainWindow,g_videoWindowList,sn,streamindex,winindex);
+  // renderer.removeWindow(mainWindow,g_videoWindowList,sn,streamindex,winindex);
+    cusStreamWin.removeWindow(mainWindow,g_videoWindowList,sn,streamindex,winindex);
 });
 ipcMain.on('manege_removeWindows',function(event,sns,streamindexs,mainWinindexs){
   for (var i = 0; i < streamindexs.length; i++) {
-    renderer.removeWindow(initSetWindow,g_videoWindowList,sns[i],streamindexs[i],mainWinindexs[i],true);
-    //   cusStreamWin.removeWindow(initSetWindow,g_videoWindowList,sns[i],streamindexs[i],mainWinindexs[i],true);
+    // renderer.removeWindow(initSetWindow,g_videoWindowList,sns[i],streamindexs[i],mainWinindexs[i],true);
+      cusStreamWin.removeWindow(initSetWindow,g_videoWindowList,sns[i],streamindexs[i],mainWinindexs[i],true);
   }
 });
 ipcMain.on('removeAllWindow',function(event){
-  renderer.removeAllWindow(mainWindow,g_videoWindowList);
-  //   cusStreamWin.removeAllWindow(mainWindow,g_videoWindowList);
+  // renderer.removeAllWindow(mainWindow,g_videoWindowList);
+    cusStreamWin.removeAllWindow(mainWindow,g_videoWindowList);
 });
 
 ipcMain.on('replaceStream',function(event,divList,streamindexList,winindexList,noVolList,newUrls){
-  renderer.replaceStream(mainWindow,g_videoWindowList,divList,streamindexList,winindexList,noVolList,newUrls);
-  //   cusStreamWin.replaceStream(mainWindow,g_videoWindowList,divList,streamindexList,winindexList,noVolList,newUrls);
+  // renderer.replaceStream(mainWindow,g_videoWindowList,divList,streamindexList,winindexList,noVolList,newUrls);
+    cusStreamWin.replaceStream(mainWindow,g_videoWindowList,divList,streamindexList,winindexList,noVolList,newUrls);
 });
 
 ipcMain.on('fullScreen',function(event){
@@ -1174,10 +1173,10 @@ ipcMain.on('fullScreen',function(event){
   if(!isFullScreen){
     var ret = globalShortcut.register('esc', function() {
       console.log('esc is pressed');
-      var streamindex = renderer.mainStreamindex();
-      // var streamindex = cusStreamWin.mainStreamindex();
-      var winIndex = renderer.mainWinindex();
-      // var winIndex = cusStreamWin.mainWinindex();
+      // var streamindex = renderer.mainStreamindex();
+      var streamindex = cusStreamWin.mainStreamindex();
+      // var winIndex = renderer.mainWinindex();
+      var winIndex = cusStreamWin.mainWinindex();
       webContents.send('fullScreen',false,streamindex,winIndex);
       isFullScreen = false;
       mainWindow.setFullScreen(isFullScreen);
@@ -1189,8 +1188,8 @@ ipcMain.on('fullScreen',function(event){
 })
 
 ipcMain.on('getVideoStr',function(event,left,top,width,height,room_id){
-  renderer.getVideoStr(mainWindow,left,top,width,height,room_id);
-  // cusVideo.getVideoStr(mainWindow,left,top,width,height,room_id);
+  // renderer.getVideoStr(mainWindow,left,top,width,height,room_id);
+  cusVideo.getVideoStr(mainWindow,left,top,width,height,room_id);
 })
 
 ipcMain.on('canvas',function(event){
@@ -1201,23 +1200,23 @@ ipcMain.on('setting',function(event){
   createSettingWindow();
 })
 ipcMain.on('getSetting',function(event){
-  renderer.getSetting(settingWindow);
-  // cusSystem.getSetting(settingWindow);
+  // renderer.getSetting(settingWindow);
+  cusSystem.getSetting(settingWindow);
 })
 
 ipcMain.on('setAce',function(event,s_index,flag,millisecond){
-  renderer.setAce(settingWindow,s_index,flag,millisecond);
-  // cusAudio.setAce(settingWindow,s_index,flag,millisecond);
+  // renderer.setAce(settingWindow,s_index,flag,millisecond);
+  cusAudio.setAce(settingWindow,s_index,flag,millisecond);
 })
 
 ipcMain.on('openAudio',function(event){
-  renderer.openAudio(settingWindow);
-  //   cusAudio.openAudio(settingWindow);
+  // renderer.openAudio(settingWindow);
+    cusAudio.openAudio(settingWindow);
 })
 
 ipcMain.on('closeAudio',function(event,streamindex){
-  renderer.closeAudio(settingWindow,streamindex);
-  //   cusAudio.closeAudio(settingWindow,streamindex);
+  // renderer.closeAudio(settingWindow,streamindex);
+    cusAudio.closeAudio(settingWindow,streamindex);
 })
 
 ipcMain.on('process',function(event){
@@ -1226,25 +1225,25 @@ ipcMain.on('process',function(event){
 })
 
 ipcMain.on('setCurrentVideo',function(event,_videoStr){
-  renderer.setCurrentVideo(_videoStr);
-  //   cusVideo.setCurrentVideo(_videoStr);
+  // renderer.setCurrentVideo(_videoStr);
+    cusVideo.setCurrentVideo(_videoStr);
 })
 
 ipcMain.on('setCurrentAideo',function(event,_aideoStr){
-  renderer.setCurrentAideo(_aideoStr);
-  //   cusAudio.setCurrentAideo(_aideoStr);
+  // renderer.setCurrentAideo(_aideoStr);
+    cusAudio.setCurrentAideo(_aideoStr);
 })
 
 ipcMain.on('startRec',function(event,width,height,mianStrIndex){
 
   loger.info("========streamindex========="+mianStrIndex);
-  renderer.startRec(mainWindow,width,height,mianStrIndex);
-  // cusRecord.startRec(mainWindow,width,height,mianStrIndex);
+  // renderer.startRec(mainWindow,width,height,mianStrIndex);
+  cusRecord.startRec(mainWindow,width,height,mianStrIndex);
 })
 
 ipcMain.on('stopRec',function(){
-  renderer.stopRec(mainWindow);
-  //   cusRecord.stopRec(mainWindow);
+  // renderer.stopRec(mainWindow);
+    cusRecord.stopRec(mainWindow);
 })
 ipcMain.on('errorWin',function(){
   console.log("r================error================");
@@ -1253,28 +1252,28 @@ ipcMain.on('errorWin',function(){
   //app.quit();
 })
 ipcMain.on('uploadFile',function(event,_filePath){
-  renderer.uploadFile(mainWindow,_filePath);
-  // cusUtils.uploadFile(mainWindow,_filePath);
+  // renderer.uploadFile(mainWindow,_filePath);
+  cusUtils.uploadFile(mainWindow,_filePath);
 })
 
 ipcMain.on('getFlagAndMil',function(){
-  renderer.getFlagAndMil(settingWindow);
-  // cusSystem.getFlagAndMil(settingWindow);
+  // renderer.getFlagAndMil(settingWindow);
+  cusSystem.getFlagAndMil(settingWindow);
 })
 
 ipcMain.on('changeFilePath',function(event,_filePath){
   if(settingWindow){
-      renderer.changeFilePath(settingWindow,_filePath);
-      // cusSystem.changeFilePath(settingWindow,_filePath);
+      // renderer.changeFilePath(settingWindow,_filePath);
+      cusSystem.changeFilePath(settingWindow,_filePath);
    }else{
-      renderer.changeFilePath(mainWindow,_filePath);
-      // cusSystem.changeFilePath(mainWindow,_filePath);
+      // renderer.changeFilePath(mainWindow,_filePath);
+      cusSystem.changeFilePath(mainWindow,_filePath);
    }
 })
 
 ipcMain.on('getFilePath',function(event){
-  renderer.getFilePath(settingWindow);
-  // cusSystem.getFilePath(settingWindow);
+  // renderer.getFilePath(settingWindow);
+  cusSystem.getFilePath(settingWindow);
 })
 
 ipcMain.on('closeWinAndStopUpload',function(event){
@@ -1283,29 +1282,29 @@ ipcMain.on('closeWinAndStopUpload',function(event){
 })
 
 ipcMain.on('closeWinAndStopRec',function(event){
-  renderer.stopRec(mainWindow);
-  // cusRecord.stopRec(mainWindow);
+  // renderer.stopRec(mainWindow);
+  cusRecord.stopRec(mainWindow);
   mainWindow.close();
 })
 
 ipcMain.on('initFilePath',function(event){
-  renderer.initFilePath(mainWindow);
-  // cusSystem.initFilePath(mainWindow);
+  // renderer.initFilePath(mainWindow);
+  cusSystem.initFilePath(mainWindow);
 })
 
 ipcMain.on('fileListAdd',function(event,_filePath){
-  renderer.fileListAdd(mainWindow,_filePath);
-  // cusSystem.fileListAdd(mainWindow,_filePath);
+  // renderer.fileListAdd(mainWindow,_filePath);
+  cusSystem.fileListAdd(mainWindow,_filePath);
 })
 
 ipcMain.on('fileListFinish',function(event,fileNo){
-  renderer.fileListFinish(settingWindow,fileNo);
-  // cusSystem.fileListFinish(settingWindow,fileNo);
+  // renderer.fileListFinish(settingWindow,fileNo);
+  cusSystem.fileListFinish(settingWindow,fileNo);
 })
 
 ipcMain.on('fileListRemove',function(event,fileNo){
-  renderer.fileListRemove(settingWindow,fileNo);
-    // cusSystem.fileListRemove(settingWindow,fileNo);
+  // renderer.fileListRemove(settingWindow,fileNo);
+    cusSystem.fileListRemove(settingWindow,fileNo);
 })
 
 ipcMain.on('stopLive',function(event){
@@ -1343,11 +1342,11 @@ ipcMain.on('closeMsg',function(event){
 
 ipcMain.on('switchPip',function(event,main_stream_index,fyr_stream_index,isPip){
   if(isPip){
-    renderer.switchPip(main_stream_index,fyr_stream_index);
-    // cusRecord.switchPip(main_stream_index,fyr_stream_index);
+    // renderer.switchPip(main_stream_index,fyr_stream_index);
+    cusRecord.switchPip(main_stream_index,fyr_stream_index);
   }else{
-    renderer.switchMain(main_stream_index);
-      // cusRecord.switchMain(main_stream_index);
+    // renderer.switchMain(main_stream_index);
+      cusRecord.switchMain(main_stream_index);
   }
 })
 
@@ -1479,8 +1478,8 @@ ipcMain.on('close_tt',function(event){
   toolsWindow.webContents.send("close_tt");
 });
 ipcMain.on('screenShotEx',function(event){
-  renderer.screenShotEx(toolsChildWindow,toolsWindow,toolsChildWindow);
-  // cusSystem.screenShotEx(toolsChildWindow,toolsWindow,toolsChildWindow);
+  // renderer.screenShotEx(toolsChildWindow,toolsWindow,toolsChildWindow);
+  cusSystem.screenShotEx(toolsChildWindow,toolsWindow,toolsChildWindow);
 });
 
 ipcMain.on('child_to_tools_change_rec_status',function(event,recStatus){
@@ -1511,8 +1510,8 @@ ipcMain.on('fayanren_removeWindows',function(event,sns,streamindexs,mainWinindex
   if(conf.stuMaxVideo){
   for (var i = 0; i < streamindexs.length; i++) {
       if(fayanrenWindow!=null){
-        renderer.removeWindow(fayanrenWindow,g_videoWindowList,sns[i],streamindexs[i],mainWinindexs[i],true);
-        // cusStreamWin.removeWindow(fayanrenWindow,g_videoWindowList,sns[i],streamindexs[i],mainWinindexs[i],true);
+        // renderer.removeWindow(fayanrenWindow,g_videoWindowList,sns[i],streamindexs[i],mainWinindexs[i],true);
+        cusStreamWin.removeWindow(fayanrenWindow,g_videoWindowList,sns[i],streamindexs[i],mainWinindexs[i],true);
       }
     }
   }
@@ -1530,8 +1529,8 @@ ipcMain.on('fyrhookWindow',function(event,ltwhArrays,urls,snList,noVolList,windo
   var conf = JSON.parse(fs.readFileSync(_confPath + "/conf.json").toString());
   if(conf.stuMaxVideo){
     if(fayanrenWindow!=null){
-       renderer.hookWindow(fayanrenWindow,g_videoWindowList,ltwhArrays,urls,snList,noVolList,windowId);
-       // cusStreamWin.hookWindow(fayanrenWindow,g_videoWindowList,ltwhArrays,urls,snList,noVolList,windowId);
+       // renderer.hookWindow(fayanrenWindow,g_videoWindowList,ltwhArrays,urls,snList,noVolList,windowId);
+       cusStreamWin.hookWindow(fayanrenWindow,g_videoWindowList,ltwhArrays,urls,snList,noVolList,windowId);
     }
  
   }
@@ -1540,32 +1539,32 @@ ipcMain.on('replaceFayanrenStream',function(event,divList,streamindexList,winind
   var conf = JSON.parse(fs.readFileSync(_confPath + "/conf.json").toString());
   if(conf.stuMaxVideo){
     if(fayanrenWindow!=null){
-    renderer.replaceStream(fayanrenWindow,g_videoWindowList,divList,streamindexList,winindexList,noVolList,newUrls);
-        // cusStreamWin.replaceStream(fayanrenWindow,g_videoWindowList,divList,streamindexList,winindexList,noVolList,newUrls);
+    // renderer.replaceStream(fayanrenWindow,g_videoWindowList,divList,streamindexList,winindexList,noVolList,newUrls);
+        cusStreamWin.replaceStream(fayanrenWindow,g_videoWindowList,divList,streamindexList,winindexList,noVolList,newUrls);
     }
   }
 });
 
 ipcMain.on('winfullscreen',function(){
-  renderer.YXV_ConfMakeWindowFullScreen(toolsChildWindow);
-    // cusStreamWin.YXV_ConfMakeWindowFullScreen(toolsChildWindow);
+  // renderer.YXV_ConfMakeWindowFullScreen(toolsChildWindow);
+    cusStreamWin.YXV_ConfMakeWindowFullScreen(toolsChildWindow);
 });
 
 ipcMain.on('getTaskBarInfo',function(){
-  renderer.YXV_ConfGetTaskBarInfo(function(width,height,position){
-  // cusSystem.YXV_ConfGetTaskBarInfo(function(width,height,position){
+  // renderer.YXV_ConfGetTaskBarInfo(function(width,height,position){
+  cusSystem.YXV_ConfGetTaskBarInfo(function(width,height,position){
     loger.info('getTaskBarInfo:width='+width+';height='+height+';position='+position);
   });
 });
 
 ipcMain.on('writeRegistry',function(event,regStr,key,val){
-  renderer.YXV_ConfWriteRegistry(regStr,key,val);
-  // cusSystem.YXV_ConfWriteRegistry(regStr,key,val);
+  // renderer.YXV_ConfWriteRegistry(regStr,key,val);
+  cusSystem.YXV_ConfWriteRegistry(regStr,key,val);
 });
 
 ipcMain.on('setWindowFull',function(){
-  renderer.YXV_ConfMakeWindowFullScreen(mainWindow);
-    // cusSystem.YXV_ConfMakeWindowFullScreen(mainWindow);
+  // renderer.YXV_ConfMakeWindowFullScreen(mainWindow);
+    cusSystem.YXV_ConfMakeWindowFullScreen(mainWindow);
 });
 //检查版本号 是否更新
 const versionUpdate = function(v) {
