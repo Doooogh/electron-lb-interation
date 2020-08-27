@@ -50,7 +50,7 @@ let isMessage = false;
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 
-let mainWindow,errorWindow,settingWindow,toolsWindow,toolsChildWindow,msgWindow,childWindow,initWindow,initSetWindow,canvasWindow,fayanrenWindow,progressWindow,innerCsWindow;
+let mainWindow,errorWindow,settingWindow,toolsWindow,toolsChildWindow,msgWindow,childWindow,initWindow,initSetWindow,canvasWindow,fayanrenWindow,progressWindow,innerCsWindow,sysConfigWindow;
 
 let g_videoWindowList = Array();
 let x,y=100;
@@ -1057,11 +1057,45 @@ app.on('ready', function(event){
      y = global.externalDisplay.bounds.height
   }
 
-  // renderer.createConf(function(){
-  cusSystem.createConf(function(){
-    init();
 
-  });
+// 第一次进行打开时 进行选择 配置文件
+    //判断是否是第一次   通过判断是否有配置文件
+
+    if(!fs.existsSync(_confPath +"/conf.json")){
+        //新建一个窗口 选择配置文件选项
+            sysConfigWindow = new BrowserWindow(
+                {
+                    title:'选择配置信息',
+                    icon:path.join(__dirname,'./res/app.ico'),
+                    width: 800,
+                    height: 650,
+                    center:true,
+                    autoHideMenuBar:true,
+                    useContentSize:false,
+                    webPreferences: {
+                        plugins: true,
+                        preload: path.join(__dirname, 'res/js', 'preload.js')
+                    }
+                })
+        sysConfigWindow.loadURL(url.format({
+            pathname: path.join(__dirname, 'view_complex/html/sysconfig.html'),
+            protocol: 'file:',
+            slashes: true
+        }))
+        sysConfigWindow.on('closed',()=>{
+            init();
+        })
+
+    }else{
+        // renderer.createConf(function(){
+        cusSystem.createConf(function(){
+            loger.info("init------------------------------------------2")
+            init();
+
+        });
+    }
+
+
   globalShortcut.register('esc', function() {
     if(mainWindow){
        var webContents = mainWindow.webContents;
@@ -1114,6 +1148,22 @@ function getTaskBarInfo(win){
 }
 
 
+
+ipcMain.on('sendSysConfigData',(event,param)=>{
+    cusSystem.createConf(function(){
+            loger.info("saveConf:"+param);
+            var data = JSON.parse(fs.readFileSync(confPath).toString());
+            data.host = param.host;
+            data.port = param.port;
+            data.nginx = param.nginx;
+            data.mcu = param.mcu;
+            data.rmanager = param.rmanager;
+            fs.writeFileSync(confPath, JSON.stringify(data, null, "   "))
+        sysConfigWindow.close();
+            // init();
+
+    })
+});
 
 
 ipcMain.on('hookWindow',function(event,ltwhArrays,urls,snList,noVolList,windowId){
@@ -1386,6 +1436,7 @@ ipcMain.on('saveInnerCs', (event,param) => {
 
 
 ipcMain.on('initWin',function(event){
+    loger.info("init------------------------------------------1")
   init();
 })
 
