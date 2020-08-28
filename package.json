@@ -121,6 +121,8 @@
     "har-schema",
     "oauth-sign",
     "tunnel-agent",
-    "performance-now"
+    "performance-now",
+    "node-http-ping",
+    "bluebird"
   ]
 }

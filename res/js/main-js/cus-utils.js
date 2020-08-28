@@ -22,8 +22,12 @@ var cusUtils = {
     //读取配置文件
     readConf: (param) => {
         var data = JSON.parse(fs.readFileSync(cusConst._confPath + "/conf.json").toString());
+        if(undefined==param||null==param){
+            return data;
+        }
         return data[param];
     },
+
     //上传文件
     uploadFile: (win, _filePath, type, fileNo) => {
         global.is_upload = true;//

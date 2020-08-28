@@ -21,6 +21,7 @@ var config = {
   BASE_CONF_PATH:'Documents\\Easyhao\\interation',
   ISPRINTSCREEN:'/ierp/api/behavioural/isPrintscreen',
   ANALYZE:'/ierp/api/behavioural/analyze',
+  SITE_CONFIG_INFO_ADDR:'http://a.easyhao.com:7000/site',
   about:{
     title:'互动3.0',
     pcV:'3.0.609',
