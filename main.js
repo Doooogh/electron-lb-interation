@@ -72,6 +72,7 @@ global.videoKey;
 
 var confData;
 let filePath;
+var num;
 
 const ping = require('node-http-ping');
 
@@ -1087,12 +1088,13 @@ app.on('ready', function(event){
         })
 
     }else{
+        init();
         // renderer.createConf(function(){
-        cusSystem.createConf(function(){
+      /*  cusSystem.createConf(function(){
             loger.info("init------------------------------------------2")
-            init();
 
-        });
+
+        });*/
     }
 
 

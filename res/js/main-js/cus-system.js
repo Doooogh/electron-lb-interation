@@ -88,12 +88,19 @@ var cusSystem={
 	},
 	
 	//创建配置文件
-	createConf: (callback)=>{
+	createConf: (callback,configData)=>{
 		  if (!fs.existsSync(_confPath +"/conf.json")) {
 		  	if(!fs.existsSync(_confPath)){
 				cusUtils.mkdirsSync(_confPath);
 		  	}
-	         var data ={
+		  	var data={};
+		  	if(undefined==configData){
+				data=  cusConst.confDefaultData;
+			}else{
+				data=  configData;
+			}
+
+	        /* var data ={
 				"flag": null,
 				"millisecond": 200,
 				"host":"39.105.40.33",
@@ -125,7 +132,7 @@ var cusSystem={
 				"bitstream":1,
 				"nginxFilePath":""
 			}
-			
+			*/
 		   fs.writeFileSync(_confPath+"/conf.json", JSON.stringify(data, null, "   "))
 		   	callback()
 	       }else{

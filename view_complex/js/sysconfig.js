@@ -1,11 +1,13 @@
 const cusHttp=nodeRequire('../../res/js/main-js/cus-http.js')
 const loger = nodeRequire('../../res/js/loger.js')
+const cusConst=nodeRequire('../../res/js/main-js/const.js')
+const cusSystem=nodeRequire('../../res/js/main-js/cus-system.js')
 var data;
 var siteInfoList=new Array();
 $(function (){
     loger.info("----------------------------data site info--------------");
     getSiteInfo();
-    // $(".cus-self").hide();
+    //选择配置时 进行 设置input 中的信息
   $("#sysconfig-select").change(function (){
       let confVal=$(this).val();
       console.log(confVal+"----------------------------confVal")
@@ -21,20 +23,17 @@ $(function (){
       }
   });
 
-
+    //确定
     $("#confirm").click(function() {
         let confTypeVal=$("#sysconfig-select").val();
-        if(confTypeVal==0){
-            var result=validate();
-            console.log(result)
-            if(!result){
-                return ;
-            }
-            data=getCusConfigData();
+        var result=validate();
+        if(result){
+                data=getCusConfigData();
         }else{
-            //从服务器上拉来下配置信息
-            data=getConfigDataFromServer(confTypeVal);
+            return ;
         }
+        loger.info("data is-----------------------");
+        loger.info(JSON.stringify(data));
         writeConfigData();
     });
 
@@ -60,15 +59,22 @@ function getSiteInfo(){
 
 function writeConfigData(){
     //写入配置文件
-    console.log(JSON.stringify(data));
-    ipcRenderer.send('sendSysConfigData',data);
+
+    let readConfData = cusConst.confDefaultData;
+    readConfData.host=data.host;
+    readConfData.port=data.port;
+    readConfData.nginx=data.nginx;
+    readConfData.mcu=data.mcu;
+    readConfData.rmanager=data.rmanager;
+
+    loger.info("write config file-----------------------");
+    loger.info(JSON.stringify(readConfData));
+    cusSystem.createConf(()=>{
+        currentWindow.close();
+    },readConfData);
+    // ipcRenderer.send('sendSysConfigData',readConfData);
 }
 
-//从服务器获取配置信息
-function getConfigDataFromServer(confTypeVal){
-    //根据 confTypeVal 获取配置信息
-    return {};
-}
 
 //获取自定义的配置信息
 function getCusConfigData(){

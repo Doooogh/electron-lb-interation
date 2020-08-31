@@ -7,7 +7,6 @@ const confLibParam = require('./cus-lib-param-type')
 const loger = require('./../loger.js')
 const confLib=require('./conf-lib.js')
 
-const config=require('./const.js')
 const cusGlobalParam=require('./cus-opreation-global-param')
 
 let confHandle = confLibParam.confHandle;

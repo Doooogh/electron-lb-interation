@@ -15,13 +15,13 @@ function mySubmit(){
 		isRemember=true;
 	}
 	 confParam = {
-		host : $('#host').val(),
+	/*	host : $('#host').val(),
 		port : $('#port').val(),
 		nginx : $('#nginx').val(),
 		mcu : $('#mcu').val(),
-		rmanager : $('#rmanager').val(),
-		userName : $('#userName').val(),
+		rmanager : $('#rmanager').val(),*/
 
+		userName : $('#userName').val(),
 		passWord : $('#passWord').val(),
 		isRemember : isRemember  //是否记住密码
 		
@@ -98,54 +98,6 @@ function login(param){
 		});
 	}
 }
-function userLogin(param){
-	
-    var userName = param.userName;
-      var dynamic = confData.dynamic;
-      var passWord = md5(param.passWord+dynamic);
-	  loger.info("________________________________________________________")
-	  loger.info(userName+"_________"+passWord+"__________"+dynamic);
-	if(userName&&passWord){
-		httpRetryCallback("http://"+confData.host+":"+confData.port+config.USER_LOGIN+"?username="+userName+"&password="+passWord+"&dynamic="+dynamic,(data)=>{
-			loger.info(userName+"_________"+passWord);
-			loger.info("login status++++++++++++++____________________________");
-			   if(data.rc == 0){
-			      var token = data.token;
-			      var userId = data.userId;
-			      loger.info("http://"+confData.host+":"+confData.port+config.FIND_LESSON+"?token="+token)
-			       http.get("http://"+confData.host+":"+confData.port+config.FIND_LESSON+"?token="+token,function(req,res){  
-			            var json='';  
-			            req.on('data',function(child_data){  
-			                json+=child_data;  
-			            });  
-			            req.on('end',function(){  
-			              loger.info("init-findLesson:"+json);
-			              var child_data = JSON.parse(json);
-			                if(child_data.rc == 0){
-			                  if(child_data.hasOwnProperty('lesson')){
-			                    var lessonId = child_data.lesson.lessonId;
-			                    processParam = 'id='+userId+'&lessonId='+lessonId+'&token='+token;
-			                    createWindow(processParam);
-								global.isSuccessLogin=true;
-								 winObj.webContents.send("loginOver",true);
-			                    if(initWindow!=null){
-			                      initWindow.close();
-			                    }
-			                  }else{
-			                    errorMsg = "no_course";
-			                    createErrorWindow()
-			                  }
-			                }
-			            }); 
-			       });
-			    }
-			  })
-		
-	}
-	/* if(!global.isSuccessLogin){
-		createUserLoginWindow();
-	} */
-}
 
 
 
@@ -184,11 +136,11 @@ $(function(){
 			}else{
 				$("input[name='isRemember']").removeAttr('checked')    //设置
 			}
-			$('#host').val(conf.host);
+			/*$('#host').val(conf.host);
 			$('#port').val(conf.port);
 			$('#nginx').val(conf.nginx);
 			$('#rmanager').val(conf.rmanager);
-			$('#mcu').val(conf.mcu);
+			$('#mcu').val(conf.mcu);*/
 		}
 	})
 
