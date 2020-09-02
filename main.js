@@ -277,7 +277,7 @@ function createWindow (processParam) {
 	     initTrayIcon();
 	 
 	     if(isError){
-	       cusWin.createErrorWindow();
+	       // cusWin.createErrorWindow();
 		   createErrorWindow();
 	     }
 	     //createMsgWindow();
@@ -1149,7 +1149,14 @@ function getTaskBarInfo(win){
   },500)
 }
 
-
+ipcMain.on('closeLoginWindow',(event,param)=>{
+    var data = JSON.parse(fs.readFileSync(confPath).toString());
+    data.isRemember=param.isRemember;
+    data.userName=param.userName;
+    data.passWord=param.passWord;
+    fs.writeFileSync(confPath, JSON.stringify(data, null, "   "))
+    initWindow.close();
+})
 
 ipcMain.on('sendSysConfigData',(event,param)=>{
     cusSystem.createConf(function(){
@@ -1623,6 +1630,9 @@ ipcMain.on('setWindowFull',function(){
 const versionUpdate = function(v) {
   const exec = require('child_process').exec;
   var conf = JSON.parse(fs.readFileSync(_confPath + "/conf.json").toString());
+  loger.info("_____________________________read conf  file-------------------")
+    loger.info(JSON.stringify(conf));
+    loger.info("_____________________________read conf  file-----------end--------")
   var readStream = request(conf.nginx+"/v0/version.json");
   var _filePath = _confPath+'\\version.json';
   var writeStream = fs.createWriteStream(_filePath);

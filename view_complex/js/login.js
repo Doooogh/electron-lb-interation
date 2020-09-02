@@ -4,7 +4,6 @@ const md5 = nodeRequire('md5-node')
 const cusHttp=nodeRequire('../../res/js/main-js/cus-http.js')
 const cusWin=nodeRequire('../../res/js/main-js/open-window.js')
 var confData={};
-var confParam={};
 function mySubmit(){
 	
 	
@@ -14,23 +13,24 @@ function mySubmit(){
 		console.log("login is remember"+"_____________________________true")
 		isRemember=true;
 	}
-	 confParam = {
-	/*	host : $('#host').val(),
+/*	 confParam = {
+	/!*	host : $('#host').val(),
 		port : $('#port').val(),
 		nginx : $('#nginx').val(),
 		mcu : $('#mcu').val(),
-		rmanager : $('#rmanager').val(),*/
+		rmanager : $('#rmanager').val(),*!/
 
 		userName : $('#userName').val(),
 		passWord : $('#passWord').val(),
 		isRemember : isRemember  //是否记住密码
 		
-	}
+	}*/
 	// window.Electron.initWin();
-	var loginParam={
+	let loginParam={
 		userName:$('#userName').val(),
 		passWord : $('#passWord').val(),
-		dynamic : confData.dynamic
+		dynamic : confData.dynamic,
+		isRemember : isRemember  //是否记住密码
 	}
 	
 	
@@ -45,11 +45,7 @@ function mySubmit(){
 	//获取全局变量中的 登陆成功 状态 isSuccessLogin
 	
 	login(loginParam);
-	
-	
-	
-	
-	
+
 }
 
 
@@ -81,12 +77,14 @@ function login(param){
 				                  if(child_data.hasOwnProperty('lesson')){
 				                    var lessonId = child_data.lesson.lessonId;
 				                    processParam = 'id='+userId+'&lessonId='+lessonId+'&token='+token;
-									ipcRenderer.send('createWindowByProcessParam',processParam);
-									window.Electron.saveConf(confParam); 
-									currentWindow.close();
+									  ipcRenderer.send('createWindowByProcessParam',processParam);
+									  ipcRenderer.send('closeLoginWindow',param);
+									  // currentWindow.close();
+									  // window.Electron.saveConf(confParam);
+
 				                  }else{
 				                    errorMsg = "no_course";
-				                    cusWin.createErrorWindow()
+				                    cusWin.createErrorWindow();
 				                  }
 				                }
 				            }); 

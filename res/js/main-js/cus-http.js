@@ -1,6 +1,6 @@
 const http = require('http');
 const loger = require('../loger.js')
-const cusWin=require('./open-window.js')
+// const cusWin=require('./open-window.js')
 var err=0;  //错误次数 
 var cusHttp={
 		
@@ -27,8 +27,8 @@ var cusHttp={
 	          if(err==3){
 	             errorMsg = "SystemError";
 	             loger.info('=========系统异常=========='); 
-	
-	             cusWin.createErrorWindow();
+					//TODO
+	             // cusWin.createErrorWindow();
 	             return;
 	          }
 	          err++;
