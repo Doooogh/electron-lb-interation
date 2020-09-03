@@ -988,7 +988,15 @@ function initTrayIcon() {
             click: () => {
                cancellation();
             }
-        },/*{
+        },{
+            label: '更改配置',
+            click: () => {
+                openSysConfigWindow();
+            }
+        },
+
+
+        /*{
             label: '参数设置',
             click: () => {
                 innerCsWindow = new BrowserWindow({
@@ -1064,29 +1072,13 @@ app.on('ready', function(event){
 
     if(!fs.existsSync(_confPath +"/conf.json")){
         //新建一个窗口 选择配置文件选项
-            sysConfigWindow = new BrowserWindow(
-                {
-                    title:'选择配置信息',
-                    icon:path.join(__dirname,'./res/app.ico'),
-                    width: 800,
-                    height: 650,
-                    center:true,
-                    autoHideMenuBar:true,
-                    useContentSize:false,
-                    webPreferences: {
-                        plugins: true,
-                        preload: path.join(__dirname, 'res/js', 'preload.js')
-                    }
-                })
-        sysConfigWindow.loadURL(url.format({
-            pathname: path.join(__dirname, 'view_complex/html/sysconfig.html'),
-            protocol: 'file:',
-            slashes: true
-        }))
+        openSysConfigWindow();
+
         sysConfigWindow.on('closed',()=>{
+            global.canReset=true;
             init();
         })
-
+        sysConfigWindow=null;
     }else{
         init();
         // renderer.createConf(function(){
@@ -1123,6 +1115,32 @@ app.on('ready', function(event){
       },800)
   })
 })
+
+function openSysConfigWindow(){
+    //新建一个窗口 选择配置文件选项
+    sysConfigWindow = new BrowserWindow(
+        {
+            title:'选择配置信息',
+            icon:path.join(__dirname,'./res/app.ico'),
+            width: 800,
+            height: 650,
+            center:true,
+            autoHideMenuBar:true,
+            useContentSize:false,
+            webPreferences: {
+                plugins: true,
+                preload: path.join(__dirname, 'res/js', 'preload.js')
+            }
+        })
+    sysConfigWindow.loadURL(url.format({
+        pathname: path.join(__dirname, 'view_complex/html/sysconfig.html'),
+        protocol: 'file:',
+        slashes: true
+    }))
+
+
+}
+
 // Quit when all windows are closed.
 app.on('window-all-closed', function () {
   if (process.platform !== 'darwin') {
@@ -1148,6 +1166,12 @@ function getTaskBarInfo(win){
     win.webContents.send("taskBarInfo",width,height,position);
   },500)
 }
+
+
+ipcMain.on("createMsgWindow",(event,msg)=>{
+    createMsgWindow();
+    msgWindow.webContents.send('onMsg',msg);
+})
 
 ipcMain.on('closeLoginWindow',(event,param)=>{
     var data = JSON.parse(fs.readFileSync(confPath).toString());
@@ -1377,8 +1401,13 @@ ipcMain.on('complex_index',function(event){
 })
 
 ipcMain.on('openMsg',(event,msg,time)=>openMsgWithMsgAndTime(event,msg,time))
+
 //打开窗口通知  param：{msg:窗口中的信息，  time：显示时间 ，过后自动关闭}
 function openMsgWithMsgAndTime(event,msg,time){
+    loger.info("open msg--------------------------------------------");
+    loger.info(msg);
+    loger.info(isMessage);
+    loger.info("open msg--------------------------------------------");
 	if(!isMessage){
 	    msgWindow.webContents.send('onMsg',msg);
 	    msgWindow.show();
@@ -1716,6 +1745,11 @@ function createProgress(){
   })
 
 }
+
+const selectSysConfig=function (){
+
+}
+
 //注销
 const cancellation = function(){
   let confData = JSON.parse(fs.readFileSync(confPath).toString()); 
@@ -1791,6 +1825,10 @@ ipcMain.on('getConfData',function(event){
 	}
 });
 
+ipcMain.on('createErrorWindow',(event)=>{
+    createErrorWindow();
+})
+
 
 //根据 processParam 创建窗口
 ipcMain.on('createWindowByProcessParam',function(event,processParam){
@@ -1857,7 +1895,7 @@ function  createErrorWindow(errorMsg,icoPath,htmlPath){
     })+'?errorMsg='+errorMsg)
 
     // errorWindow.openDevTools();
-    // Emitted when the window is closed.
+    // Emitzx110ted when the window is closed.
     errorWindow.on('closed', function () {
         if(mainWindow != null){
             mainWindow.close()

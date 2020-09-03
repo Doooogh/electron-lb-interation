@@ -2,7 +2,7 @@ const http = nodeRequire('http');
 const loger = nodeRequire('../../res/js/loger.js')
 const md5 = nodeRequire('md5-node')
 const cusHttp=nodeRequire('../../res/js/main-js/cus-http.js')
-const cusWin=nodeRequire('../../res/js/main-js/open-window.js')
+// const cusWin=nodeRequire('../../res/js/main-js/open-window.js')
 var confData={};
 function mySubmit(){
 	
@@ -84,7 +84,8 @@ function login(param){
 
 				                  }else{
 				                    errorMsg = "no_course";
-				                    cusWin.createErrorWindow();
+				                    ipcRenderer.send('createErrorWindow')
+				                    // cusWin.createErrorWindow();
 				                  }
 				                }
 				            }); 

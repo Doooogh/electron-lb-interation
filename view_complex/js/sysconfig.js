@@ -2,6 +2,7 @@ const cusHttp=nodeRequire('../../res/js/main-js/cus-http.js')
 const loger = nodeRequire('../../res/js/loger.js')
 const cusConst=nodeRequire('../../res/js/main-js/const.js')
 const cusSystem=nodeRequire('../../res/js/main-js/cus-system.js')
+const cusUtils=nodeRequire('../../res/js/main-js/cus-utils.js')
 var data;
 var siteInfoList=new Array();
 $(function (){
@@ -37,6 +38,18 @@ $(function (){
         writeConfigData();
     });
 
+    ipcRenderer.on('writeConf',(event,result)=>{
+        let msg="";
+        if(result.status=="ok"){
+            msg="已重置,重启后生效"
+        }else{
+            msg="配置信息更新失败!"
+        }
+        ipcRenderer.send('openMsg',msg);
+        currentWindow.close();
+
+    });
+
 });
 
 //从服务器获取配置文件信息
@@ -58,20 +71,32 @@ function getSiteInfo(){
 }
 
 function writeConfigData(){
+    let readConfData;
     //写入配置文件
+    cusUtils.existConfig((isExist)=>{
+        if(isExist){
+            readConfData= cusUtils.readConf();
+            readConfData.host=data.host;
+            readConfData.port=data.port;
+            readConfData.nginx=data.nginx;
+            readConfData.mcu=data.mcu;
+            readConfData.rmanager=data.rmanager;
+            readConfData.lastModified=new Date();
+            loger.info("write config file-----------------------");
+            loger.info(JSON.stringify(readConfData));
+            //覆盖配置文件
+            cusUtils.writeConf(currentWindow,readConfData);
+        }else{
+            readConfData = cusConst.confDefaultData;
+            //第一次生成配置文件
+            cusSystem.createConf(()=>{
+                currentWindow.close();
+            },readConfData);
+        }
 
-    let readConfData = cusConst.confDefaultData;
-    readConfData.host=data.host;
-    readConfData.port=data.port;
-    readConfData.nginx=data.nginx;
-    readConfData.mcu=data.mcu;
-    readConfData.rmanager=data.rmanager;
+    });
 
-    loger.info("write config file-----------------------");
-    loger.info(JSON.stringify(readConfData));
-    cusSystem.createConf(()=>{
-        currentWindow.close();
-    },readConfData);
+
     // ipcRenderer.send('sendSysConfigData',readConfData);
 }
 

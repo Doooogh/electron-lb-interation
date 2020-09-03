@@ -26,7 +26,11 @@ var cusUtils = {
         }
         return data[param];
     },
+    existConfig:(callback)=>{
+        let  isExist=fs.existsSync(cusConst._confPath +"/conf.json");
+        callback(isExist);
 
+    },
     //上传文件
     uploadFile: (win, _filePath, type, fileNo) => {
         global.is_upload = true;//

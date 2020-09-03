@@ -38,7 +38,8 @@ var cusConst={
 			"recPwd":"999999",
 			"deviceId":"",//设备ID
 			"bitstream":1,
-			"nginxFilePath":""
+			"nginxFilePath":"",
+			"lastModified":""
 	}
 	
 }
